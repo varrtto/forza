@@ -19,42 +19,46 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-const days = [
+const genders = [
   {
-    value: "lunes",
-    label: "Lunes",
+    value: "masculino",
+    label: "Masculino",
   },
   {
-    value: "martes",
-    label: "Martes",
+    value: "femenino",
+    label: "Femenino",
   },
   {
-    value: "miercoles",
-    label: "Miercoles",
-  },
-  {
-    value: "jueves",
-    label: "Jueves",
-  },
-  {
-    value: "viernes",
-    label: "Viernes",
-  },
-  {
-    value: "sabado",
-    label: "Sabado",
-  },
-  {
-    value: "domingo",
-    label: "Domingo",
+    value: "otro",
+    label: "Otro",
   },
 ];
 
+interface ComboboxProps {
+  value?: string;
+  onValueChange?: (value: string) => void;
+}
+
 export function Combobox({
+  value: controlledValue,
+  onValueChange,
   ...props
-}: React.ComponentProps<typeof PopoverTrigger>) {
+}: ComboboxProps &
+  Omit<
+    React.ComponentProps<typeof PopoverTrigger>,
+    "value" | "onValueChange"
+  >) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [internalValue, setInternalValue] = React.useState("");
+
+  const value = controlledValue !== undefined ? controlledValue : internalValue;
+
+  const handleValueChange = (newValue: string) => {
+    if (controlledValue === undefined) {
+      setInternalValue(newValue);
+    }
+    onValueChange?.(newValue);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -67,33 +71,34 @@ export function Combobox({
           {...props}
         >
           {value
-            ? days.find((day) => day.value === value)?.label
-            : "Select day..."}
+            ? genders.find((gender) => gender.value === value)?.label
+            : "Seleccionar género..."}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search framework..." />
+          <CommandInput placeholder="Buscar género..." />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No género encontrado.</CommandEmpty>
             <CommandGroup>
-              {days?.map((day) => (
+              {genders?.map((gender) => (
                 <CommandItem
-                  key={day.value}
-                  value={day.value}
+                  key={gender.value}
+                  value={gender.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                    const newValue = currentValue === value ? "" : currentValue;
+                    handleValueChange(newValue);
                     setOpen(false);
                   }}
                 >
                   <CheckIcon
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === day.value ? "opacity-100" : "opacity-0"
+                      value === gender.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {day.label}
+                  {gender.label}
                 </CommandItem>
               ))}
             </CommandGroup>

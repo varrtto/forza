@@ -15,8 +15,10 @@ export interface MuscleGroup {
 export interface Exercise {
   id: string;
   name: string;
-  series: number[];
+  series: number;
+  reps: number[];
   weight: number[];
+  details: string;
 }
 
 export interface Routine {
@@ -43,6 +45,7 @@ export interface RoutineStore {
     muscleGroupId: string,
     exerciseId: string,
     field: keyof Exercise,
+    exerciseName: string,
     value: string | number
   ) => void;
   addSet: (dayId: string, muscleGroupId: string, exerciseId: string) => void;
@@ -56,7 +59,21 @@ export interface RoutineStore {
     dayId: string,
     muscleGroupId: string,
     exerciseId: string,
-    setIndex: number,
+    reps: number[],
+    weight: number[]
+  ) => void;
+  addReps: (dayId: string, muscleGroupId: string, exerciseId: string) => void;
+  removeReps: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    repsIndex: number
+  ) => void;
+  updateReps: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    repsIndex: number,
     reps: number
   ) => void;
   addWeight: (dayId: string, muscleGroupId: string, exerciseId: string) => void;
@@ -72,6 +89,18 @@ export interface RoutineStore {
     exerciseId: string,
     weightIndex: number,
     weight: number
+  ) => void;
+  updateDetails: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    details: string
+  ) => void;
+  updateSeries: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    series: number
   ) => void;
   saveRoutine: (routine: Routine) => void;
 }
@@ -151,8 +180,10 @@ const useRoutineStore = create<RoutineStore>((set) => ({
                           {
                             id: crypto.randomUUID(),
                             name: "",
-                            series: [1],
-                            weight: [0],
+                            series: 1,
+                            reps: [10], // Default reps value
+                            weight: [0], // Default weight value
+                            details: "",
                           },
                         ],
                       }
@@ -191,6 +222,7 @@ const useRoutineStore = create<RoutineStore>((set) => ({
     muscleGroupId: string,
     exerciseId: string,
     field: keyof Exercise,
+    exerciseName: string,
     value: string | number
   ) =>
     set((state) => ({
@@ -205,7 +237,9 @@ const useRoutineStore = create<RoutineStore>((set) => ({
                     ? {
                         ...mg,
                         exercises: mg.exercises.map((ex) =>
-                          ex.id === exerciseId ? { ...ex, [field]: value } : ex
+                          ex.id === exerciseId
+                            ? { ...ex, [field]: value, name: exerciseName }
+                            : ex
                         ),
                       }
                     : mg
@@ -231,8 +265,9 @@ const useRoutineStore = create<RoutineStore>((set) => ({
                           ex.id === exerciseId
                             ? {
                                 ...ex,
-                                series: [...ex.series, 1],
-                                weight: [...ex.weight, 0],
+                                series: ex.series + 1,
+                                reps: [...ex.reps, 10], // Add default reps value
+                                weight: [...ex.weight, 0], // Add default weight value
                               }
                             : ex
                         ),
@@ -265,7 +300,9 @@ const useRoutineStore = create<RoutineStore>((set) => ({
                           ex.id === exerciseId
                             ? {
                                 ...ex,
-                                series: ex.series.filter(
+                                series: Math.max(1, ex.series - 1), // Ensure minimum of 1 series
+                                reps: ex.reps.filter((_, i) => i !== setIndex),
+                                weight: ex.weight.filter(
                                   (_, i) => i !== setIndex
                                 ),
                               }
@@ -283,8 +320,8 @@ const useRoutineStore = create<RoutineStore>((set) => ({
     dayId: string,
     muscleGroupId: string,
     exerciseId: string,
-    setIndex: number,
-    reps: number
+    reps: number[],
+    weight: number[]
   ) =>
     set((state) => ({
       routine: {
@@ -301,8 +338,101 @@ const useRoutineStore = create<RoutineStore>((set) => ({
                           ex.id === exerciseId
                             ? {
                                 ...ex,
-                                series: ex.series.map((s, i) =>
-                                  i === setIndex ? reps : s
+                                reps: reps,
+                                weight: weight,
+                              }
+                            : ex
+                        ),
+                      }
+                    : mg
+                ),
+              }
+            : d
+        ),
+      },
+    })),
+  addReps: (dayId: string, muscleGroupId: string, exerciseId: string) =>
+    set((state) => ({
+      routine: {
+        ...state.routine,
+        days: state.routine?.days?.map((d) =>
+          d.id === dayId
+            ? {
+                ...d,
+                muscleGroups: d.muscleGroups.map((mg) =>
+                  mg.id === muscleGroupId
+                    ? {
+                        ...mg,
+                        exercises: mg.exercises.map((ex) =>
+                          ex.id === exerciseId
+                            ? { ...ex, reps: [...ex.reps, 0] }
+                            : ex
+                        ),
+                      }
+                    : mg
+                ),
+              }
+            : d
+        ),
+      },
+    })),
+  removeReps: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    repsIndex: number
+  ) =>
+    set((state) => ({
+      routine: {
+        ...state.routine,
+        days: state.routine?.days?.map((d) =>
+          d.id === dayId
+            ? {
+                ...d,
+                muscleGroups: d.muscleGroups.map((mg) =>
+                  mg.id === muscleGroupId
+                    ? {
+                        ...mg,
+                        exercises: mg.exercises.map((ex) =>
+                          ex.id === exerciseId
+                            ? {
+                                ...ex,
+                                reps: ex.reps.filter((_, i) => i !== repsIndex),
+                              }
+                            : ex
+                        ),
+                      }
+                    : mg
+                ),
+              }
+            : d
+        ),
+      },
+    })),
+  updateReps: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    repsIndex: number,
+    reps: number
+  ) =>
+    set((state) => ({
+      routine: {
+        ...state.routine,
+        days: state.routine?.days?.map((d) =>
+          d.id === dayId
+            ? {
+                ...d,
+                muscleGroups: d.muscleGroups.map((mg) =>
+                  mg.id === muscleGroupId
+                    ? {
+                        ...mg,
+                        exercises: mg.exercises.map((ex) =>
+                          ex.id === exerciseId
+                            ? {
+                                ...ex,
+                                reps: ex.reps.map((r, i) =>
+                                  i === repsIndex ? reps : r
                                 ),
                               }
                             : ex
@@ -411,6 +541,80 @@ const useRoutineStore = create<RoutineStore>((set) => ({
         ),
       },
     })),
+  updateDetails: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    details: string
+  ) =>
+    set((state) => ({
+      routine: {
+        ...state.routine,
+        days: state.routine?.days?.map((d) =>
+          d.id === dayId
+            ? {
+                ...d,
+                muscleGroups: d.muscleGroups.map((mg) =>
+                  mg.id === muscleGroupId
+                    ? {
+                        ...mg,
+                        exercises: mg.exercises.map((ex) =>
+                          ex.id === exerciseId
+                            ? { ...ex, details: details }
+                            : ex
+                        ),
+                      }
+                    : mg
+                ),
+              }
+            : d
+        ),
+      },
+    })),
+  updateSeries: (
+    dayId: string,
+    muscleGroupId: string,
+    exerciseId: string,
+    series: number
+  ) =>
+    set((state) => ({
+      routine: {
+        ...state.routine,
+        days: state.routine?.days?.map((d) =>
+          d.id === dayId
+            ? {
+                ...d,
+                muscleGroups: d.muscleGroups.map((mg) =>
+                  mg.id === muscleGroupId
+                    ? {
+                        ...mg,
+                        exercises: mg.exercises.map((ex) =>
+                          ex.id === exerciseId
+                            ? {
+                                ...ex,
+                                series: Math.max(1, series), // Ensure minimum of 1 series
+                                reps: Array.from(
+                                  { length: Math.max(1, series) },
+                                  (_, i) =>
+                                    i < ex.reps.length ? ex.reps[i] : 10 // Keep existing values, add defaults for new positions
+                                ),
+                                weight: Array.from(
+                                  { length: Math.max(1, series) },
+                                  (_, i) =>
+                                    i < ex.weight.length ? ex.weight[i] : 0 // Keep existing values, add defaults for new positions
+                                ),
+                              }
+                            : ex
+                        ),
+                      }
+                    : mg
+                ),
+              }
+            : d
+        ),
+      },
+    })),
+
   saveRoutine: (routine: Routine) => set({ routine: routine }),
 }));
 
