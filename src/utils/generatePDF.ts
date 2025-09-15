@@ -98,5 +98,5 @@ export const generatePDF = (routine: Routine) => {
     }
   });
 
-  doc.save("rutina.pdf");
+  doc.save(`rutina ${routine.name}.pdf`);
 };
