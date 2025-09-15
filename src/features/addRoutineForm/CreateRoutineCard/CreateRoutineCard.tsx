@@ -3,6 +3,7 @@ import { Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import useRoutineStore from "@/state/newRoutine";
 import { Plus } from "lucide-react";
 import { DAYS_OF_WEEK } from "../addRoutineForm.constants";
@@ -46,6 +47,12 @@ export const CreateRoutineCard = () => {
               Todos los días han sido agregados a tu rutina
             </p>
           )}
+          <Label
+            htmlFor="alumno-name"
+            className="text-xs text-muted-foreground"
+          >
+            Nombre del Alumno
+          </Label>
           <Input
             type="text"
             placeholder="Nombre del Alumno"
