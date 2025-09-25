@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StudentsTable } from "@/features/studentsTable";
+import { StudentsList } from "@/features/studentsList";
 
 export default function Home() {
   return (
@@ -8,14 +7,9 @@ export default function Home() {
       <p className="text-muted-foreground text-sm">
         Aquí puedes agregar alumnos y rutinas de entrenamiento
       </p>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-center">Alumnos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <StudentsTable />
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-6xl px-4">
+        <StudentsList />
+      </div>
     </div>
   );
 }
