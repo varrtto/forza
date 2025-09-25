@@ -34,7 +34,7 @@ export default function SignIn() {
         router.push("/");
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       setError("Error al iniciar sesión");
     } finally {
       setIsLoading(false);

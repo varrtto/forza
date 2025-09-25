@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export const StudentsList = () => {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
@@ -35,7 +35,7 @@ export const StudentsList = () => {
       } else {
         setError(data.error || "Error al cargar estudiantes");
       }
-    } catch (error) {
+    } catch {
       setError("Error de conexión");
     } finally {
       setLoading(false);
@@ -74,7 +74,7 @@ export const StudentsList = () => {
         const data = await response.json();
         setError(data.error || "Error al eliminar estudiante");
       }
-    } catch (error) {
+    } catch {
       setError("Error de conexión");
     }
   };

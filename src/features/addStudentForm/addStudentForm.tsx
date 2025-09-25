@@ -79,7 +79,7 @@ export const AddStudentForm = () => {
       } else {
         setError(result.error || "Error al agregar el estudiante");
       }
-    } catch (error) {
+    } catch {
       setError("Error de conexión. Intenta nuevamente.");
     } finally {
       setIsLoading(false);
@@ -148,6 +148,10 @@ export const AddStudentForm = () => {
                   <Combobox
                     value={field.value}
                     onValueChange={field.onChange}
+                    options={[
+                      { value: "Masculino", label: "Masculino" },
+                      { value: "Femenino", label: "Femenino" },
+                    ]}
                   />
                 </FormControl>
                 <FormMessage />
