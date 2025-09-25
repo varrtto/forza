@@ -19,29 +19,31 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-const genders = [
-  {
-    value: "masculino",
-    label: "Masculino",
-  },
-  {
-    value: "femenino",
-    label: "Femenino",
-  },
-  {
-    value: "otro",
-    label: "Otro",
-  },
-];
+export interface ComboboxOption {
+  value: string;
+  label: string;
+}
 
 interface ComboboxProps {
   value?: string;
   onValueChange?: (value: string) => void;
+  options: ComboboxOption[];
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  disabled?: boolean;
+  className?: string;
 }
 
 export function Combobox({
   value: controlledValue,
   onValueChange,
+  options,
+  placeholder = "Seleccionar...",
+  searchPlaceholder = "Buscar...",
+  emptyText = "No se encontraron resultados.",
+  disabled = false,
+  className,
   ...props
 }: ComboboxProps &
   Omit<
@@ -60,6 +62,8 @@ export function Combobox({
     onValueChange?.(newValue);
   };
 
+  const selectedOption = options.find((option) => option.value === value);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -67,25 +71,27 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          disabled={disabled}
+          className={cn("w-full justify-between", className)}
           {...props}
         >
-          {value
-            ? genders.find((gender) => gender.value === value)?.label
-            : "Seleccionar género..."}
+          {selectedOption ? selectedOption.label : placeholder}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent
+        className="w-full p-0"
+        style={{ width: "var(--radix-popover-trigger-width)" }}
+      >
         <Command>
-          <CommandInput placeholder="Buscar género..." />
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
-            <CommandEmpty>No género encontrado.</CommandEmpty>
+            <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
-              {genders?.map((gender) => (
+              {options?.map((option) => (
                 <CommandItem
-                  key={gender.value}
-                  value={gender.value}
+                  key={option.value}
+                  value={option.value}
                   onSelect={(currentValue) => {
                     const newValue = currentValue === value ? "" : currentValue;
                     handleValueChange(newValue);
@@ -95,10 +101,10 @@ export function Combobox({
                   <CheckIcon
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === gender.value ? "opacity-100" : "opacity-0"
+                      value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {gender.label}
+                  {option.label}
                 </CommandItem>
               ))}
             </CommandGroup>

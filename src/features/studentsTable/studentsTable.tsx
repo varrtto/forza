@@ -3,7 +3,6 @@
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -75,7 +74,7 @@ export const StudentsTable = () => {
           <TableHead key={column.accessorKey}>{column.header}</TableHead>
         ))}
       </TableHeader>
-      <TableCaption>Lista de alumnos</TableCaption>
+
       <TableBody>
         {students.map((student) => (
           <TableRow key={student.id}>
@@ -84,7 +83,7 @@ export const StudentsTable = () => {
             <TableCell>{student.phone}</TableCell>
             <TableCell>
               <Trash
-                size={18}
+                size={16}
                 onClick={() => handleDelete(student.id)}
                 className="cursor-pointer"
               />

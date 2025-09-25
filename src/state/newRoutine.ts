@@ -1,35 +1,11 @@
+import { Day, Exercise, Routine } from "@/types";
 import { create } from "zustand";
-
-export interface Day {
-  id: string;
-  name: string;
-  muscleGroups: MuscleGroup[];
-}
-
-export interface MuscleGroup {
-  id: string;
-  name: string;
-  exercises: Exercise[];
-}
-
-export interface Exercise {
-  id: string;
-  name: string;
-  series: number;
-  reps: number[];
-  weight: number[];
-  details: string;
-}
-
-export interface Routine {
-  id: string;
-  name: string;
-  days: Day[];
-}
 
 export interface RoutineStore {
   routine: Routine;
   updateAlumnoName: (name: string) => void;
+  updateSelectedStudent: (studentId: string) => void;
+  resetRoutine: () => void;
   addDay: (day: Day) => void;
   removeDay: (id: string) => void;
   addMuscleGroup: (dayId: string, muscleGroupName: string) => void;
@@ -114,6 +90,19 @@ const useRoutineStore = create<RoutineStore>((set) => ({
   updateAlumnoName: (name: string) =>
     set((state) => ({
       routine: { ...state.routine, name: name },
+    })),
+  updateSelectedStudent: (studentId: string) =>
+    set((state) => ({
+      routine: { ...state.routine, studentId: studentId },
+    })),
+  resetRoutine: () =>
+    set(() => ({
+      routine: {
+        id: "",
+        name: "",
+        studentId: undefined,
+        days: [],
+      } as Routine,
     })),
   addDay: (day: Day) =>
     set((state) => ({

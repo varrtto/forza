@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import useRoutineStore, { Day, MuscleGroup } from "@/state/newRoutine";
+import useRoutineStore from "@/state/newRoutine";
+import { Day, MuscleGroup } from "@/types";
 import { Dumbbell, Plus, Trash2 } from "lucide-react";
 import { EXERCISES_BY_MUSCLE_GROUP } from "../../addRoutineForm.constants";
 

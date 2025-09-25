@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import useRoutineStore, { Day } from "@/state/newRoutine";
+import useRoutineStore from "@/state/newRoutine";
+import { Day } from "@/types";
 import { Calendar, Plus, Trash2 } from "lucide-react";
 import { MUSCLE_GROUPS } from "../addRoutineForm.constants";
 import { MuscleGroupCard } from "./MuscleGroupCard";

@@ -12,6 +12,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -26,6 +29,12 @@ const schema = z.object({
 });
 
 export const AddStudentForm = () => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -39,10 +48,58 @@ export const AddStudentForm = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof schema>) => {
-    console.log("Form data:", data);
-    // Handle form submission here
+  const onSubmit = async (data: z.infer<typeof schema>) => {
+    if (!session?.user?.id) {
+      setError("Debes estar autenticado para agregar estudiantes");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch("/api/students", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccess("Estudiante agregado exitosamente");
+        form.reset();
+        // Optionally redirect or refresh the page
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      } else {
+        setError(result.error || "Error al agregar el estudiante");
+      }
+    } catch {
+      setError("Error de conexión. Intenta nuevamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Show loading state if session is loading
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-muted-foreground">Cargando...</div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (status === "unauthenticated") {
+    router.push("/auth/signin");
+    return null;
+  }
 
   return (
     <Form {...form}>
@@ -91,6 +148,10 @@ export const AddStudentForm = () => {
                   <Combobox
                     value={field.value}
                     onValueChange={field.onChange}
+                    options={[
+                      { value: "Masculino", label: "Masculino" },
+                      { value: "Femenino", label: "Femenino" },
+                    ]}
                   />
                 </FormControl>
                 <FormMessage />
@@ -160,7 +221,19 @@ export const AddStudentForm = () => {
             </FormItem>
           )}
         />
-        <Button type="submit">Guardar</Button>
+        {error && (
+          <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="text-green-600 text-sm text-center bg-green-50 p-3 rounded-md">
+            {success}
+          </div>
+        )}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Guardando..." : "Guardar"}
+        </Button>
       </form>
     </Form>
   );

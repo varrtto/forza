@@ -9,6 +9,7 @@ interface ButtonLinkProps {
   children: React.ReactNode;
   className?: string;
   variant?: "default" | "link" | "outline" | "secondary" | "ghost";
+  onClick?: () => void;
 }
 
 /**
@@ -26,11 +27,16 @@ export function ButtonLink({
   children,
   className,
   variant,
+  onClick,
   ...props
 }: ButtonLinkProps) {
   return (
     <Button asChild variant={variant} {...props}>
-      <Link href={href} className={cn("flex items-center gap-2", className)}>
+      <Link
+        href={href}
+        className={cn("flex items-center gap-2", className)}
+        onClick={onClick}
+      >
         {children}
       </Link>
     </Button>

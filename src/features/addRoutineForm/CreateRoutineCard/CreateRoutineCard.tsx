@@ -2,24 +2,90 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import useRoutineStore from "@/state/newRoutine";
-import { Plus } from "lucide-react";
+import { Student } from "@/types";
+import { Plus, RotateCcw } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { DAYS_OF_WEEK } from "../addRoutineForm.constants";
 
-export const CreateRoutineCard = () => {
-  const { routine, addDay, updateAlumnoName } = useRoutineStore();
+interface CreateRoutineCardProps {
+  preSelectedStudentId?: string | null;
+}
+
+export const CreateRoutineCard = ({
+  preSelectedStudentId,
+}: CreateRoutineCardProps) => {
+  const { routine, addDay, updateSelectedStudent, resetRoutine } =
+    useRoutineStore();
+  const { data: session } = useSession();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const availableDays = DAYS_OF_WEEK.filter(
     (day) => !routine.days?.some((routineDay) => routineDay.name === day)
   );
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchStudents();
+    }
+  }, [session]);
+
+  // Pre-select student if provided
+  useEffect(() => {
+    if (preSelectedStudentId && students.length > 0) {
+      const studentExists = students.some(
+        (student) => student.id === preSelectedStudentId
+      );
+      if (studentExists) {
+        updateSelectedStudent(preSelectedStudentId);
+      }
+    }
+  }, [preSelectedStudentId, students, updateSelectedStudent]);
+
+  const fetchStudents = async () => {
+    try {
+      const response = await fetch("/api/students");
+      const data = await response.json();
+
+      if (response.ok) {
+        setStudents(data.students);
+      }
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Convert students to combobox options
+  const studentOptions: ComboboxOption[] = students.map((student) => ({
+    value: student.id,
+    label: student.name,
+  }));
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Agregar Día de Entrenamiento
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Agregar Día de Entrenamiento
+          </CardTitle>
+          {routine.days.length > 0 && (
+            <Button
+              onClick={resetRoutine}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Resetear
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center gap-4">
@@ -47,18 +113,29 @@ export const CreateRoutineCard = () => {
               Todos los días han sido agregados a tu rutina
             </p>
           )}
-          <Label
-            htmlFor="alumno-name"
-            className="text-xs text-muted-foreground"
-          >
-            Nombre del Alumno
-          </Label>
-          <Input
-            type="text"
-            placeholder="Nombre del Alumno"
-            value={routine.name}
-            onChange={(e) => updateAlumnoName(e.target.value)}
-          />
+          <div className="w-full">
+            <Label
+              htmlFor="student-combobox"
+              className="text-xs text-muted-foreground"
+            >
+              Seleccionar Estudiante
+            </Label>
+            <Combobox
+              value={routine.studentId || ""}
+              onValueChange={updateSelectedStudent}
+              options={studentOptions}
+              placeholder="Selecciona un estudiante"
+              searchPlaceholder="Buscar estudiante..."
+              emptyText="No se encontraron estudiantes."
+              disabled={loading}
+              className="mt-1"
+            />
+            {students.length === 0 && !loading && (
+              <p className="text-muted-foreground text-xs mt-1">
+                No hay estudiantes disponibles. Agrega un estudiante primero.
+              </p>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
