@@ -79,20 +79,20 @@ export const StudentsList = () => {
     }
   };
 
-  if (status === "loading" || loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">Cargando estudiantes...</div>
-      </div>
-    );
-  }
-
   if (status === "unauthenticated") {
     return (
       <div className="text-center p-8">
         <p className="text-muted-foreground">
           Debes iniciar sesión para ver los estudiantes
         </p>
+      </div>
+    );
+  }
+
+  if (status === "loading" || loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-muted-foreground">Cargando estudiantes...</div>
       </div>
     );
   }
