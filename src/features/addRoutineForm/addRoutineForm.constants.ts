@@ -23,6 +23,7 @@ export const MUSCLE_GROUPS = [
 
 export const EXERCISES_BY_MUSCLE_GROUP = {
   Piernas: [
+    "Curl femorales",
     "Sentadillas c/ TRX",
     "Extensión de rodillas Sillón cuadriceps",
     "Sentadillas c/ barra",
@@ -68,7 +69,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Elevación de talones sentado",
     "Elevación de talones c/ hack",
   ],
-  Pectorales: [
+  Pecho: [
     "Press bco plano c/ barra",
     "Press bco plano c/ mancuernas",
     "Aperturas bco plano",
