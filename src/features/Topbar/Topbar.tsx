@@ -44,12 +44,7 @@ export const Topbar = () => {
                   <UserPlus className="h-4 w-4" />
                 </span>
               </ButtonLink>
-              <ButtonLink href="/add-routine" variant="link">
-                <span className="flex items-center gap-2">
-                  Agregar rutina
-                  <ListCheck className="h-4 w-4" />
-                </span>
-              </ButtonLink>
+
               <div className="flex items-center gap-2 ml-4 pl-4 border-l border-border">
                 <span className="flex items-center gap-1 text-sm">
                   <User className="h-4 w-4" />
