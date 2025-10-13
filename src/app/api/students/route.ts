@@ -15,26 +15,28 @@ export async function POST(request: NextRequest) {
       await request.json();
 
     // Validate required fields
-    if (!name || !age || !gender || !height || !weight || !email || !phone) {
+    if (!name || !age || !gender || !height || !weight) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: "Name, age, gender, height, and weight are required" },
         { status: 400 }
       );
     }
 
-    // Check if student email already exists for this user
-    const { data: existingStudent } = await supabaseAdmin
-      .from("students")
-      .select("id")
-      .eq("user_id", session.user.id)
-      .eq("email", email)
-      .single();
+    // Check if student email already exists for this user (only if email is provided)
+    if (email && email.trim() !== "") {
+      const { data: existingStudent } = await supabaseAdmin
+        .from("students")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("email", email)
+        .single();
 
-    if (existingStudent) {
-      return NextResponse.json(
-        { error: "Student with this email already exists" },
-        { status: 400 }
-      );
+      if (existingStudent) {
+        return NextResponse.json(
+          { error: "Student with this email already exists" },
+          { status: 400 }
+        );
+      }
     }
 
     // Create student

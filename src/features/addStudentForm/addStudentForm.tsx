@@ -24,8 +24,8 @@ const schema = z.object({
   gender: z.string().min(1, "El género es requerido"),
   height: z.number().min(1, "La altura debe ser mayor a 0"),
   weight: z.number().min(1, "El peso debe ser mayor a 0"),
-  email: z.string().email("Email inválido").min(1, "El email es requerido"),
-  phone: z.string().min(1, "El teléfono es requerido"),
+  email: z.union([z.string().email("Email inválido"), z.literal("")]),
+  phone: z.string(),
 });
 
 export const AddStudentForm = () => {
