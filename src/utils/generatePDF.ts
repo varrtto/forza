@@ -27,14 +27,12 @@ export const generatePDF = async (routine: Routine) => {
   // Title with better styling
   doc.setFontSize(20);
   doc.setFont("", "bold");
-  doc.text(`Rutina de Entrenamiento`, 7, 15);
-  doc.setFontSize(16);
+  doc.text(`Rutina de Entrenamiento de ${studentName}`, 7, 15);
   doc.setFont("", "normal");
-  doc.text(`Estudiante: ${studentName}`, 7, 23);
 
   // Add date
   doc.setFontSize(10);
-  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 29);
+  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 20);
 
   let y = 35; // Start after header
   const pageHeight = 297; // A4 page height in mm for jsPDF default
@@ -127,30 +125,11 @@ export const generatePDF = async (routine: Routine) => {
 
     // Add space between days
     y += 15;
-    if (y > pageHeight - 20) {
+    if (y > pageHeight - 10) {
       doc.addPage();
       y = 15;
     }
   });
-
-  // Add footer on the last page
-  const currentPage = doc.getCurrentPageInfo().pageNumber;
-  doc.setPage(currentPage);
-
-  // Footer line
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.2);
-  doc.line(7, pageHeight - 15, pageWidth - 7, pageHeight - 15);
-
-  // Footer text
-  doc.setFontSize(8);
-  doc.setTextColor(100, 100, 100);
-  doc.text(
-    `Generado por Forza - ${new Date().toLocaleDateString()}`,
-    7,
-    pageHeight - 8
-  );
-  doc.text(`Página ${currentPage}`, pageWidth - 30, pageHeight - 8);
 
   doc.save(`Rutina_${studentName.replace(/\s+/g, "_")}.pdf`);
 };
