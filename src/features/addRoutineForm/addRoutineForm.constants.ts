@@ -42,6 +42,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Sentadillas c/ step",
     "Curl Nórdico y variaciones",
     "Subida al Cajon unilateral",
+    "Buenos dias",
   ],
   Glúteos: [
     "Extensión de cadera patada atrás parado",
@@ -175,6 +176,8 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Elevación en bco inclinado c/ mancuernas Aperturas la vez supino",
     "Remo al mentón c/ barra",
     "Vuelo lateral a 1 brazo acostado de lado",
+    "Qué me importa",
+    "Elevaciones en Y en bco inclinado c/ mancuernas",
   ],
   Abdominales: [
     "Abs sentado en bco rodillas al pecho",

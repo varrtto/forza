@@ -263,7 +263,9 @@ export default function StudentDetailPage({
                   Este estudiante no tiene rutinas creadas
                 </p>
                 <Button
-                  onClick={() => router.push("/add-routine")}
+                  onClick={() =>
+                    router.push(`/add-routine?studentId=${student.id}`)
+                  }
                   variant="outline"
                 >
                   Crear Primera Rutina

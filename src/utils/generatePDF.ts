@@ -65,8 +65,8 @@ export const generatePDF = async (routine: Routine) => {
 
       // Fixed utility columns
       const seriesColWidth = 20; // widened so header fits on one line
-      const repsColWidth = 28;
-      const weightsColWidth = 28;
+      const repsColWidth = 32;
+      const weightsColWidth = 32;
 
       // Equal widths for EJERCICIO and DETALLES with remaining space
       const remainingForText =
@@ -122,7 +122,7 @@ export const generatePDF = async (routine: Routine) => {
       // jsPDF-AutoTable augments the doc instance with lastAutoTable
       type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
       const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
-      y = finalY + 8; // space after table
+      y = finalY + 4; // space after table
     });
 
     // Add space between days
