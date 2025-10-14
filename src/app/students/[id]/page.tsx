@@ -154,8 +154,9 @@ export default function StudentDetailPage({
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col items-center justify-between mb-6 gap-4">
+          <h1 className="text-3xl font-bold">{student.name}</h1>
+          <div className="flex md:items-center justify-between md:justify-center md:gap-4 w-full">
             <Button
               onClick={() => router.push("/")}
               variant="outline"
@@ -164,9 +165,6 @@ export default function StudentDetailPage({
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver
             </Button>
-            <h1 className="text-3xl font-bold">{student.name}</h1>
-          </div>
-          <div className="flex gap-2">
             <Button
               onClick={() => router.push(`/students/${resolvedParams.id}/edit`)}
               variant="outline"
@@ -308,14 +306,8 @@ export default function StudentDetailPage({
                           Creada:{" "}
                           {new Date(routine.created_at).toLocaleDateString()}
                         </p>
-                        {routine.routine_data?.days && (
-                          <p className="text-sm text-muted-foreground">
-                            {routine.routine_data.days.length} día(s) de
-                            entrenamiento
-                          </p>
-                        )}
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col md:flex-row gap-2">
                         <Button
                           onClick={() => router.push(`/routines/${routine.id}`)}
                           variant="outline"

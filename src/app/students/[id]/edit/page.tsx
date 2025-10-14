@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { AddStudentForm } from "@/features/addStudentForm";
 import { Student } from "@/types";
 import { ArrowLeft } from "lucide-react";
@@ -93,7 +93,13 @@ export default function EditStudentPage({
     <div className="font-sans min-h-screen items-center justify-items-center pt-10">
       <div className="w-full max-w-xl mx-auto px-4">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col items-center gap-4 mb-6">
+          <div>
+            <p className="text-foreground text-sm text-center">
+              Editar Estudiante
+            </p>
+            <h1 className="text-2xl font-bold text-center">{student.name}</h1>
+          </div>
           <Button
             onClick={() => router.push(`/students/${resolvedParams.id}`)}
             variant="outline"
@@ -102,17 +108,10 @@ export default function EditStudentPage({
             <ArrowLeft className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Editar Estudiante</h1>
-            <p className="text-muted-foreground text-sm">{student.name}</p>
-          </div>
         </div>
 
         {/* Edit Form */}
         <Card className="border-0 shadow-none md:border md:shadow-sm">
-          <CardHeader>
-            <CardTitle>Información del Estudiante</CardTitle>
-          </CardHeader>
           <CardContent>
             <AddStudentForm
               existingStudent={student}

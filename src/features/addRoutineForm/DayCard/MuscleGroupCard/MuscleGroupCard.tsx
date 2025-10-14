@@ -14,7 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import useRoutineStore from "@/state/newRoutine";
 import { Day, MuscleGroup } from "@/types";
-import { Dumbbell, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { EXERCISES_BY_MUSCLE_GROUP } from "../../addRoutineForm.constants";
 
 export const MuscleGroupCard = ({
@@ -64,16 +64,28 @@ export const MuscleGroupCard = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent>
         {muscleGroup.exercises.length === 0 ? (
           <p className="text-muted-foreground text-sm italic">
             No se han agregado ejercicios aún
           </p>
         ) : (
           muscleGroup.exercises.map((exercise) => (
-            <div key={exercise.id} className="p-4 bg-muted/30 rounded-lg">
+            <div
+              key={exercise.id}
+              className="p-2 bg-muted/30 rounded-lg relative"
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  removeExercise(day.id, muscleGroup.id, exercise.id)
+                }
+                className="absolute top-0 right-0 text-destructive hover:text-destructive flex-shrink-0 mt-2"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
               <div className="flex items-start gap-3">
-                <Dumbbell className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-2" />
                 <div className="flex-1 space-y-4">
                   {/* Exercise Name - Now a combobox */}
                   <div>
@@ -233,16 +245,6 @@ export const MuscleGroupCard = ({
                     </div>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    removeExercise(day.id, muscleGroup.id, exercise.id)
-                  }
-                  className="text-destructive hover:text-destructive flex-shrink-0 mt-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
               <Label
                 htmlFor={`exercise-details-${exercise.id}`}

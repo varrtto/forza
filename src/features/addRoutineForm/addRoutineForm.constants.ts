@@ -92,6 +92,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
   Espalda: [
     "Polea alta pecho",
     "Polea tras nuca",
+    "Espalda de cobra en bco plano",
     "Dominadas",
     "Polea a 1 mano",
     "Remo en trípode",
@@ -159,6 +160,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Vuelos frontales",
     "Press afuera y arriba c/ disco",
     "Pres afuera c/ disco",
+    "Elevaciones frontales con Disco",
     "Vuelo laterale a 1 brazo",
     "Posteriores ( pajaro)",
     "Posteriores parado a 45°",

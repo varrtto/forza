@@ -92,7 +92,11 @@ export default function EditRoutinePage({
     <div className="font-sans min-h-screen items-center justify-items-center pt-10 px-4 md:px-0">
       <div className="w-full max-w-xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col items-center gap-4 mb-6">
+          <p className="text-sm">Editar Rutina</p>
+          <h1 className="text-2xl font-bold text-center">
+            {routine.students.name}
+          </h1>
           <Button
             onClick={() => router.push(`/routines/${resolvedParams.id}`)}
             variant="outline"
@@ -101,12 +105,7 @@ export default function EditRoutinePage({
             <ArrowLeft className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Editar Rutina</h1>
-            <p className="text-muted-foreground text-sm">
-              {routine.name} - {routine.students.name}
-            </p>
-          </div>
+          <div></div>
         </div>
 
         {/* Edit Form */}

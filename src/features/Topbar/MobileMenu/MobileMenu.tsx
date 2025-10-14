@@ -2,7 +2,7 @@
 
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Button } from "@/components/ui/button";
-import { ListCheck, LogIn, LogOut, User, UserPlus, Users } from "lucide-react";
+import { LogIn, LogOut, Settings, UserPlus, Users } from "lucide-react";
 import { Session } from "next-auth";
 
 interface MobileMenuProps {
@@ -43,14 +43,6 @@ export const MobileMenu = ({
               <div className="text-sm text-muted-foreground">Cargando...</div>
             ) : session ? (
               <>
-                {/* User Info */}
-                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg mb-6">
-                  <User className="h-5 w-5" />
-                  <span className="text-sm font-medium">
-                    {session.user?.name || session.user?.email}
-                  </span>
-                </div>
-
                 {/* Navigation Links */}
                 <ButtonLink
                   href="/"
@@ -77,14 +69,14 @@ export const MobileMenu = ({
                 </ButtonLink>
 
                 <ButtonLink
-                  href="/add-routine"
+                  href="/profile"
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={onClose}
                 >
                   <span className="flex items-center gap-3">
-                    <ListCheck className="h-5 w-5" />
-                    Agregar rutina
+                    <Settings className="h-5 w-5" />
+                    Mi Perfil
                   </span>
                 </ButtonLink>
 
