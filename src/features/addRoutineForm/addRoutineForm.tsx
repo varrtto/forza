@@ -1,6 +1,7 @@
 "use client";
 
 import useRoutineStore from "@/state/newRoutine";
+import { Routine } from "@/types";
 import { useEffect } from "react";
 
 import { CreateRoutineCard } from "./CreateRoutineCard";
@@ -10,22 +11,35 @@ import { SaveButton } from "./SaveButton";
 
 interface AddRoutineFormProps {
   preSelectedStudentId?: string | null;
+  existingRoutine?: Routine | null;
+  routineId?: string | null;
 }
 
 export const AddRoutineForm = ({
   preSelectedStudentId,
+  existingRoutine,
+  routineId,
 }: AddRoutineFormProps) => {
-  const { routine, resetRoutine } = useRoutineStore();
+  const { routine, resetRoutine, loadRoutine } = useRoutineStore();
 
-  // Reset routine state when component mounts
+  // Initialize routine state when component mounts
   useEffect(() => {
-    resetRoutine();
-  }, [resetRoutine]);
+    if (existingRoutine) {
+      // Load existing routine for editing
+      loadRoutine(existingRoutine);
+    } else {
+      // Reset for creating new routine
+      resetRoutine();
+    }
+  }, [existingRoutine, resetRoutine, loadRoutine]);
 
   return (
     <div className="space-y-6 max-w-xl py-4">
       {/* Add Day Section */}
-      <CreateRoutineCard preSelectedStudentId={preSelectedStudentId} />
+      <CreateRoutineCard
+        preSelectedStudentId={preSelectedStudentId}
+        isEditMode={!!existingRoutine}
+      />
 
       {/* Days List */}
       <div className="space-y-6">
@@ -34,7 +48,13 @@ export const AddRoutineForm = ({
         ))}
       </div>
       {/* Save Button */}
-      {routine.days?.length > 0 && <SaveButton routine={routine} />}
+      {routine.days?.length > 0 && (
+        <SaveButton
+          routine={routine}
+          isEditMode={!!existingRoutine}
+          routineId={routineId}
+        />
+      )}
 
       {/* Empty Routine Card */}
       {routine.days?.length === 0 && <EmptyRoutineCard />}

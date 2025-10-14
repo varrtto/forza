@@ -6,7 +6,17 @@ import { FileText, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export const SaveButton = ({ routine }: { routine: Routine }) => {
+interface SaveButtonProps {
+  routine: Routine;
+  isEditMode?: boolean;
+  routineId?: string | null;
+}
+
+export const SaveButton = ({
+  routine,
+  isEditMode = false,
+  routineId,
+}: SaveButtonProps) => {
   const { resetRoutine } = useRoutineStore();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
@@ -14,7 +24,7 @@ export const SaveButton = ({ routine }: { routine: Routine }) => {
   const [success, setSuccess] = useState("");
 
   const handleSaveToStudent = async () => {
-    if (!routine.studentId) {
+    if (!routine.studentId && !isEditMode) {
       setError("Por favor selecciona un estudiante");
       return;
     }
@@ -24,28 +34,59 @@ export const SaveButton = ({ routine }: { routine: Routine }) => {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/routines", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          studentId: routine.studentId,
-          routineData: routine,
-        }),
-      });
+      let response;
+
+      if (isEditMode && routineId) {
+        // Update existing routine
+        response = await fetch(`/api/routines/${routineId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            routineData: routine,
+          }),
+        });
+      } else {
+        // Create new routine
+        response = await fetch("/api/routines", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            studentId: routine.studentId,
+            routineData: routine,
+          }),
+        });
+      }
 
       const result = await response.json();
 
       if (response.ok) {
-        setSuccess("Rutina guardada exitosamente");
-        resetRoutine(); // Reset the routine after successful save
+        setSuccess(
+          isEditMode
+            ? "Rutina actualizada exitosamente"
+            : "Rutina guardada exitosamente"
+        );
+
         setTimeout(() => {
-          // Redirect to student profile to see the new routine
-          router.push(`/students/${routine.studentId}`);
+          if (isEditMode && routineId) {
+            // Redirect to routine detail page
+            router.push(`/routines/${routineId}`);
+          } else {
+            // Reset and redirect to student profile
+            resetRoutine();
+            router.push(`/students/${routine.studentId}`);
+          }
         }, 1500);
       } else {
-        setError(result.error || "Error al guardar la rutina");
+        setError(
+          result.error ||
+            (isEditMode
+              ? "Error al actualizar la rutina"
+              : "Error al guardar la rutina")
+        );
       }
     } catch {
       setError("Error de conexión. Intenta nuevamente.");
@@ -93,10 +134,16 @@ export const SaveButton = ({ routine }: { routine: Routine }) => {
           onClick={handleSaveToStudent}
           size="lg"
           className="px-8 flex items-center gap-2"
-          disabled={isSaving || !routine.studentId}
+          disabled={isSaving || (!routine.studentId && !isEditMode)}
         >
           <Save className="h-4 w-4" />
-          {isSaving ? "Guardando..." : "Guardar Rutina"}
+          {isSaving
+            ? isEditMode
+              ? "Actualizando..."
+              : "Guardando..."
+            : isEditMode
+            ? "Actualizar Rutina"
+            : "Guardar Rutina"}
         </Button>
       </div>
     </div>

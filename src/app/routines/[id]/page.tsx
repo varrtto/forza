@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoutineWithStudent } from "@/types";
-import { ArrowLeft, Calendar, FileText } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Pencil } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
@@ -121,14 +121,24 @@ export default function RoutineDetailPage({
               </p>
             </div>
           </div>
-          <Button
-            onClick={handleGeneratePDF}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Generar PDF
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => router.push(`/routines/${resolvedParams.id}/edit`)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Pencil className="h-4 w-4" />
+              Editar
+            </Button>
+            <Button
+              onClick={handleGeneratePDF}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Generar PDF
+            </Button>
+          </div>
         </div>
 
         {/* Routine Details */}

@@ -13,10 +13,12 @@ import { DAYS_OF_WEEK } from "../addRoutineForm.constants";
 
 interface CreateRoutineCardProps {
   preSelectedStudentId?: string | null;
+  isEditMode?: boolean;
 }
 
 export const CreateRoutineCard = ({
   preSelectedStudentId,
+  isEditMode = false,
 }: CreateRoutineCardProps) => {
   const { routine, addDay, updateSelectedStudent, resetRoutine } =
     useRoutineStore();
@@ -113,29 +115,31 @@ export const CreateRoutineCard = ({
               Todos los días han sido agregados a tu rutina
             </p>
           )}
-          <div className="w-full">
-            <Label
-              htmlFor="student-combobox"
-              className="text-xs text-muted-foreground"
-            >
-              Seleccionar Estudiante
-            </Label>
-            <Combobox
-              value={routine.studentId || ""}
-              onValueChange={updateSelectedStudent}
-              options={studentOptions}
-              placeholder="Selecciona un estudiante"
-              searchPlaceholder="Buscar estudiante..."
-              emptyText="No se encontraron estudiantes."
-              disabled={loading}
-              className="mt-1"
-            />
-            {students.length === 0 && !loading && (
-              <p className="text-muted-foreground text-xs mt-1">
-                No hay estudiantes disponibles. Agrega un estudiante primero.
-              </p>
-            )}
-          </div>
+          {!isEditMode && (
+            <div className="w-full">
+              <Label
+                htmlFor="student-combobox"
+                className="text-xs text-muted-foreground"
+              >
+                Seleccionar Estudiante
+              </Label>
+              <Combobox
+                value={routine.studentId || ""}
+                onValueChange={updateSelectedStudent}
+                options={studentOptions}
+                placeholder="Selecciona un estudiante"
+                searchPlaceholder="Buscar estudiante..."
+                emptyText="No se encontraron estudiantes."
+                disabled={loading}
+                className="mt-1"
+              />
+              {students.length === 0 && !loading && (
+                <p className="text-muted-foreground text-xs mt-1">
+                  No hay estudiantes disponibles. Agrega un estudiante primero.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

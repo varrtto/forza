@@ -61,6 +61,85 @@ export async function GET(
   }
 }
 
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Check if user is authenticated
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const resolvedParams = await params;
+    const studentId = resolvedParams.id;
+
+    // Parse request body
+    const body = await request.json();
+    const { name, age, gender, height, weight, email, phone } = body;
+
+    // Validate required fields
+    if (!name || !age || !gender || !height || !weight) {
+      return NextResponse.json(
+        { error: "All required fields must be provided" },
+        { status: 400 }
+      );
+    }
+
+    // Verify that the student belongs to the current user
+    const { data: existingStudent, error: studentError } = await supabaseAdmin
+      .from("students")
+      .select("id")
+      .eq("id", studentId)
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (studentError || !existingStudent) {
+      return NextResponse.json(
+        { error: "Student not found or access denied" },
+        { status: 404 }
+      );
+    }
+
+    // Update the student
+    const { data: updatedStudent, error: updateError } = await supabaseAdmin
+      .from("students")
+      .update({
+        name,
+        age,
+        gender,
+        height,
+        weight,
+        email: email || "",
+        phone: phone || "",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", studentId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error("Student update error:", updateError);
+      return NextResponse.json(
+        { error: "Failed to update student" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { student: updatedStudent, message: "Student updated successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Student update error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

@@ -11,10 +11,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Student } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -28,25 +29,50 @@ const schema = z.object({
   phone: z.string(),
 });
 
-export const AddStudentForm = () => {
+interface AddStudentFormProps {
+  existingStudent?: Student | null;
+  studentId?: string | null;
+}
+
+export const AddStudentForm = ({
+  existingStudent,
+  studentId,
+}: AddStudentFormProps) => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const isEditMode = !!existingStudent;
+
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: "",
-      age: 0,
-      gender: "",
-      height: 0,
-      weight: 0,
-      email: "",
-      phone: "",
+      name: existingStudent?.name || "",
+      age: existingStudent?.age || 0,
+      gender: existingStudent?.gender || "",
+      height: existingStudent?.height || 0,
+      weight: existingStudent?.weight || 0,
+      email: existingStudent?.email || "",
+      phone: existingStudent?.phone || "",
     },
   });
+
+  // Update form values when existingStudent changes
+  useEffect(() => {
+    if (existingStudent) {
+      form.reset({
+        name: existingStudent.name,
+        age: existingStudent.age,
+        gender: existingStudent.gender,
+        height: existingStudent.height,
+        weight: existingStudent.weight,
+        email: existingStudent.email || "",
+        phone: existingStudent.phone || "",
+      });
+    }
+  }, [existingStudent, form]);
 
   const onSubmit = async (data: z.infer<typeof schema>) => {
     if (!session?.user?.id) {
@@ -59,25 +85,56 @@ export const AddStudentForm = () => {
     setSuccess("");
 
     try {
-      const response = await fetch("/api/students", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      let response;
+
+      if (isEditMode && studentId) {
+        // Update existing student
+        response = await fetch(`/api/students/${studentId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+      } else {
+        // Create new student
+        response = await fetch("/api/students", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+      }
 
       const result = await response.json();
 
       if (response.ok) {
-        setSuccess("Estudiante agregado exitosamente");
-        form.reset();
-        // Optionally redirect or refresh the page
+        setSuccess(
+          isEditMode
+            ? "Estudiante actualizado exitosamente"
+            : "Estudiante agregado exitosamente"
+        );
+
+        if (!isEditMode) {
+          form.reset();
+        }
+
+        // Redirect after success
         setTimeout(() => {
-          router.push("/");
+          if (isEditMode && studentId) {
+            router.push(`/students/${studentId}`);
+          } else {
+            router.push("/");
+          }
         }, 1500);
       } else {
-        setError(result.error || "Error al agregar el estudiante");
+        setError(
+          result.error ||
+            (isEditMode
+              ? "Error al actualizar el estudiante"
+              : "Error al agregar el estudiante")
+        );
       }
     } catch {
       setError("Error de conexión. Intenta nuevamente.");
@@ -232,7 +289,13 @@ export const AddStudentForm = () => {
           </div>
         )}
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Guardando..." : "Guardar"}
+          {isLoading
+            ? isEditMode
+              ? "Actualizando..."
+              : "Guardando..."
+            : isEditMode
+            ? "Actualizar Estudiante"
+            : "Guardar Estudiante"}
         </Button>
       </form>
     </Form>

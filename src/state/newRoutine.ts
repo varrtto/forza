@@ -6,6 +6,7 @@ export interface RoutineStore {
   updateAlumnoName: (name: string) => void;
   updateSelectedStudent: (studentId: string) => void;
   resetRoutine: () => void;
+  loadRoutine: (routine: Routine) => void;
   addDay: (day: Day) => void;
   removeDay: (id: string) => void;
   addMuscleGroup: (dayId: string, muscleGroupName: string) => void;
@@ -103,6 +104,10 @@ const useRoutineStore = create<RoutineStore>((set) => ({
         studentId: undefined,
         days: [],
       } as Routine,
+    })),
+  loadRoutine: (routine: Routine) =>
+    set(() => ({
+      routine: routine,
     })),
   addDay: (day: Day) =>
     set((state) => ({

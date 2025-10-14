@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Calendar,
   Mail,
+  Pencil,
   Phone,
   Plus,
   Ruler,
@@ -165,9 +166,24 @@ export default function StudentDetailPage({
             </Button>
             <h1 className="text-3xl font-bold">{student.name}</h1>
           </div>
-          <Button onClick={handleDeleteStudent} variant="destructive" size="sm">
-            Eliminar Estudiante
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => router.push(`/students/${resolvedParams.id}/edit`)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Pencil className="h-4 w-4" />
+              Editar
+            </Button>
+            <Button
+              onClick={handleDeleteStudent}
+              variant="destructive"
+              size="sm"
+            >
+              Eliminar Estudiante
+            </Button>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -210,27 +226,34 @@ export default function StudentDetailPage({
           </Card>
 
           {/* Contact Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Información de Contacto
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{student.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Teléfono</p>
-                <p className="font-medium flex items-center gap-1">
-                  <Phone className="h-4 w-4" />
-                  {student.phone}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {(student.email.length > 0 || student.phone.length > 0) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Información de Contacto
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {student.email && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Email</p>
+                    <p className="font-medium">{student.email}</p>
+                  </div>
+                )}
+                {student.phone && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Teléfono</p>
+                    <p className="font-medium flex items-center gap-1">
+                      <Phone className="h-4 w-4" />
+                      {student.phone}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Routines Section */}
@@ -299,6 +322,17 @@ export default function StudentDetailPage({
                           size="sm"
                         >
                           Ver Rutina
+                        </Button>
+                        <Button
+                          onClick={() =>
+                            router.push(`/routines/${routine.id}/edit`)
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-1"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Editar
                         </Button>
                         <Button
                           onClick={() => handleDeleteRoutine(routine.id)}

@@ -6,31 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useReducer } from "react";
+import { initialState, signUpReducer } from "./signUpReducer";
 
 export default function SignUp() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [state, dispatch] = useReducer(signUpReducer, initialState);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    dispatch({ type: "SET_LOADING", payload: true });
+    dispatch({ type: "RESET_ERROR" });
 
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden");
-      setIsLoading(false);
+    if (state.password !== state.confirmPassword) {
+      dispatch({ type: "SET_ERROR", payload: "Las contraseñas no coinciden" });
+      dispatch({ type: "SET_LOADING", payload: false });
       return;
     }
 
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
-      setIsLoading(false);
+    if (state.password.length < 6) {
+      dispatch({
+        type: "SET_ERROR",
+        payload: "La contraseña debe tener al menos 6 caracteres",
+      });
+      dispatch({ type: "SET_LOADING", payload: false });
       return;
     }
 
@@ -41,9 +40,9 @@ export default function SignUp() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          email,
-          password,
+          name: state.name,
+          email: state.email,
+          password: state.password,
         }),
       });
 
@@ -52,17 +51,20 @@ export default function SignUp() {
       if (response.ok) {
         router.push("/auth/signin?message=Cuenta creada exitosamente");
       } else {
-        setError(data.error || "Error al crear la cuenta");
+        dispatch({
+          type: "SET_ERROR",
+          payload: data.error || "Error al crear la cuenta",
+        });
       }
     } catch {
-      setError("Error al crear la cuenta");
+      dispatch({ type: "SET_ERROR", payload: "Error al crear la cuenta" });
     } finally {
-      setIsLoading(false);
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Crear Cuenta</CardTitle>
@@ -74,10 +76,12 @@ export default function SignUp() {
               <Input
                 id="name"
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={state.name}
+                onChange={(e) =>
+                  dispatch({ type: "SET_NAME", payload: e.target.value })
+                }
                 required
-                disabled={isLoading}
+                disabled={state.isLoading}
               />
             </div>
             <div>
@@ -85,10 +89,12 @@ export default function SignUp() {
               <Input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={state.email}
+                onChange={(e) =>
+                  dispatch({ type: "SET_EMAIL", payload: e.target.value })
+                }
                 required
-                disabled={isLoading}
+                disabled={state.isLoading}
               />
             </div>
             <div>
@@ -96,10 +102,12 @@ export default function SignUp() {
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={state.password}
+                onChange={(e) =>
+                  dispatch({ type: "SET_PASSWORD", payload: e.target.value })
+                }
                 required
-                disabled={isLoading}
+                disabled={state.isLoading}
                 minLength={6}
               />
             </div>
@@ -108,17 +116,24 @@ export default function SignUp() {
               <Input
                 id="confirmPassword"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={state.confirmPassword}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_CONFIRM_PASSWORD",
+                    payload: e.target.value,
+                  })
+                }
                 required
-                disabled={isLoading}
+                disabled={state.isLoading}
               />
             </div>
-            {error && (
-              <div className="text-red-500 text-sm text-center">{error}</div>
+            {state.error && (
+              <div className="text-red-500 text-sm text-center">
+                {state.error}
+              </div>
             )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
+            <Button type="submit" className="w-full" disabled={state.isLoading}>
+              {state.isLoading ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
           </form>
           <div className="mt-4 text-center">

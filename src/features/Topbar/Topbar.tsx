@@ -2,10 +2,11 @@
 
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Button } from "@/components/ui/button";
-import { ListCheck, LogOut, Menu, User, UserPlus, X } from "lucide-react";
+import { LogOut, Menu, User, UserPlus, Users, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useState } from "react";
+import { MobileMenu } from "./MobileMenu";
 
 export const Topbar = () => {
   const { data: session, status } = useSession();
@@ -38,6 +39,12 @@ export const Topbar = () => {
             <div className="text-sm text-muted-foreground">Cargando...</div>
           ) : session ? (
             <>
+              <ButtonLink href="/" variant="link">
+                <span className="flex items-center gap-2">
+                  Lista de Alumnos
+                  <Users className="h-4 w-4" />
+                </span>
+              </ButtonLink>
               <ButtonLink href="/add-student" variant="link">
                 <span className="flex items-center gap-2">
                   Agregar alumno
@@ -84,108 +91,13 @@ export const Topbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={closeMobileMenu}
-        />
-      )}
-
-      {/* Mobile Menu */}
-      <div
-        className={`fixed top-0 right-0 h-full w-80 bg-background border-l border-border shadow-lg transform transition-transform duration-300 ease-in-out z-50 md:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="p-6">
-          {/* Mobile Menu Header */}
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold">Menú</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={closeMobileMenu}
-              className="p-2"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Mobile Menu Content */}
-          <div className="space-y-4">
-            {status === "loading" ? (
-              <div className="text-sm text-muted-foreground">Cargando...</div>
-            ) : session ? (
-              <>
-                {/* User Info */}
-                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg mb-6">
-                  <User className="h-5 w-5" />
-                  <span className="text-sm font-medium">
-                    {session.user?.name || session.user?.email}
-                  </span>
-                </div>
-
-                {/* Navigation Links */}
-                <ButtonLink
-                  href="/add-student"
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={closeMobileMenu}
-                >
-                  <span className="flex items-center gap-3">
-                    <UserPlus className="h-5 w-5" />
-                    Agregar alumno
-                  </span>
-                </ButtonLink>
-
-                <ButtonLink
-                  href="/add-routine"
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={closeMobileMenu}
-                >
-                  <span className="flex items-center gap-3">
-                    <ListCheck className="h-5 w-5" />
-                    Agregar rutina
-                  </span>
-                </ButtonLink>
-
-                {/* Sign Out Button */}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-destructive hover:text-destructive"
-                  onClick={handleSignOut}
-                >
-                  <span className="flex items-center gap-3">
-                    <LogOut className="h-5 w-5" />
-                    Cerrar Sesión
-                  </span>
-                </Button>
-              </>
-            ) : (
-              <div className="space-y-3">
-                <ButtonLink
-                  href="/auth/signin"
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={closeMobileMenu}
-                >
-                  Iniciar Sesión
-                </ButtonLink>
-                <ButtonLink
-                  href="/auth/signup"
-                  variant="default"
-                  className="w-full"
-                  onClick={closeMobileMenu}
-                >
-                  Registrarse
-                </ButtonLink>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={closeMobileMenu}
+        session={session}
+        status={status}
+        onSignOut={handleSignOut}
+      />
     </>
   );
 };
