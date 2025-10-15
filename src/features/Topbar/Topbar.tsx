@@ -62,7 +62,7 @@ export const Topbar = () => {
                   {session.user.gym_name}
                 </h1>
                 <span className="text-[8px] text-muted-foreground font-medium leading-none -mt-1">
-                  by FORZA
+                  de FORZA
                 </span>
               </div>
             </>
