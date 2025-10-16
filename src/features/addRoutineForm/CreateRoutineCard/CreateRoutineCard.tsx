@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import useRoutineStore from "@/state/newRoutine";
@@ -20,7 +21,7 @@ export const CreateRoutineCard = ({
   preSelectedStudentId,
   isEditMode = false,
 }: CreateRoutineCardProps) => {
-  const { routine, addDay, updateSelectedStudent, resetRoutine } =
+  const { routine, addDay, updateSelectedStudent, resetRoutine, toggleFullBody } =
     useRoutineStore();
   const { data: session } = useSession();
   const [students, setStudents] = useState<Student[]>([]);
@@ -140,6 +141,19 @@ export const CreateRoutineCard = ({
               )}
             </div>
           )}
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox
+              id="fullBody"
+              checked={routine.isFullBody || false}
+              onCheckedChange={toggleFullBody}
+            />
+            <Label
+              htmlFor="fullBody"
+              className="text-sm font-normal cursor-pointer"
+            >
+              Rutina Full Body (PDF compacto)
+            </Label>
+          </div>
         </div>
       </CardContent>
     </Card>

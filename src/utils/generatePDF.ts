@@ -2,9 +2,104 @@ import { Routine } from "@/types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export const generatePDF = async (routine: Routine) => {
+const generateCompactPDF = async (routine: Routine, studentName: string) => {
   const doc = new jsPDF();
 
+  // Title
+  doc.setFontSize(18);
+  doc.setFont("", "bold");
+  doc.text(`Rutina Full Body - ${studentName}`, 7, 12);
+  doc.setFont("", "normal");
+  doc.setFontSize(9);
+  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 17);
+
+  let y = 25;
+  const pageHeight = 297;
+  const pageWidth = 210;
+  const margin = 7;
+
+  routine.days.forEach((day, dayIdx) => {
+    // Day header - more compact
+    doc.setFillColor(240, 240, 240);
+    doc.rect(margin, y - 3, pageWidth - 2 * margin, 6, "F");
+    doc.setFontSize(13);
+    doc.setFont("", "bold");
+    doc.text(`${day.name}`, margin + 2, y + 1);
+    doc.setFont("", "normal");
+    y += 8;
+
+    // Collect all exercises for this day
+    const allExercises: Array<{
+      muscleGroup: string;
+      exercise: string;
+      series: string | number;
+      reps: string;
+      weights: string;
+    }> = [];
+
+    day.muscleGroups.forEach((mg) => {
+      mg.exercises.forEach((ex) => {
+        allExercises.push({
+          muscleGroup: mg.name,
+          exercise: ex.name || "(Sin nombre)",
+          series: ex.series && ex.series > 0 ? ex.series : "-",
+          reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
+          weights: ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
+        });
+      });
+    });
+
+    // Render compact table
+    autoTable(doc, {
+      startY: y,
+      margin: { left: margin, right: margin },
+      columns: [
+        { header: "Grupo", dataKey: "muscleGroup" },
+        { header: "Ejercicio", dataKey: "exercise" },
+        { header: "Series", dataKey: "series" },
+        { header: "Reps", dataKey: "reps" },
+        { header: "Peso", dataKey: "weights" },
+      ],
+      body: allExercises,
+      headStyles: {
+        fillColor: [60, 60, 60],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 10,
+        cellPadding: 1.5,
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 1.5,
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250],
+      },
+      columnStyles: {
+        muscleGroup: { cellWidth: 32 },
+        exercise: { cellWidth: 73 },
+        series: { cellWidth: 20, halign: "center" },
+        reps: { cellWidth: 35.5 },
+        weights: { cellWidth: 35.5 },
+      },
+    });
+
+    type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
+    const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
+    y = finalY + 6;
+
+    if (y > pageHeight - 20 && dayIdx < routine.days.length - 1) {
+      doc.addPage();
+      y = 15;
+    }
+  });
+
+  doc.save(`Rutina_FullBody_${studentName.replace(/\s+/g, "_")}.pdf`);
+};
+
+export const generatePDF = async (routine: Routine) => {
   // Fetch student name if studentId is available
   let studentName = "Estudiante";
   if (routine.studentId) {
@@ -23,6 +118,13 @@ export const generatePDF = async (routine: Routine) => {
       console.error("Error fetching student name:", error);
     }
   }
+
+  // Use compact PDF for full body routines
+  if (routine.isFullBody) {
+    return generateCompactPDF(routine, studentName);
+  }
+
+  const doc = new jsPDF();
 
   // Title with better styling
   doc.setFontSize(20);

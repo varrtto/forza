@@ -5,6 +5,7 @@ export interface RoutineStore {
   routine: Routine;
   updateAlumnoName: (name: string) => void;
   updateSelectedStudent: (studentId: string) => void;
+  toggleFullBody: () => void;
   resetRoutine: () => void;
   loadRoutine: (routine: Routine) => void;
   addDay: (day: Day) => void;
@@ -95,6 +96,10 @@ const useRoutineStore = create<RoutineStore>((set) => ({
   updateSelectedStudent: (studentId: string) =>
     set((state) => ({
       routine: { ...state.routine, studentId: studentId },
+    })),
+  toggleFullBody: () =>
+    set((state) => ({
+      routine: { ...state.routine, isFullBody: !state.routine.isFullBody },
     })),
   resetRoutine: () =>
     set(() => ({

@@ -17,6 +17,7 @@ export default function RoutineDetailPage({
   const router = useRouter();
   const [routine, setRoutine] = useState<RoutineWithStudent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
 
   const resolvedParams = use(params);
@@ -50,12 +51,16 @@ export default function RoutineDetailPage({
   const handleGeneratePDF = async () => {
     if (!routine) return;
 
+    setIsGenerating(true);
+    setError("");
     try {
       // Import generatePDF dynamically
       const { generatePDF } = await import("@/utils/generatePDF");
       await generatePDF(routine.routine_data);
     } catch {
       setError("Error al generar el PDF");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -128,9 +133,10 @@ export default function RoutineDetailPage({
               onClick={handleGeneratePDF}
               variant="outline"
               className="flex items-center gap-2"
+              disabled={isGenerating}
             >
               <FileText className="h-4 w-4" />
-              Generar PDF
+              {isGenerating ? "Generando..." : "Generar PDF"}
             </Button>
           </div>
           <div className="flex gap-2"></div>

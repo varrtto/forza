@@ -1,11 +1,23 @@
-import { StudentsList } from "@/features/studentsList";
+import { BenefitsSection } from "@/components/landing/BenefitsSection";
+import { CTASection } from "@/components/landing/CTASection";
+import { FeaturesSection } from "@/components/landing/FeaturesSection";
+import { Footer } from "@/components/landing/Footer";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
+import { getServerSession } from "next-auth";
 
-export default function Home() {
+export default async function LandingPage() {
+  const session = await getServerSession();
+  const isAuthenticated = !!session;
+
   return (
-    <div className="flex flex-col font-sans min-h-screen items-center justify-items-center pt-10 gap-4">
-      <div className="w-full max-w-6xl px-4">
-        <StudentsList />
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <HeroSection isAuthenticated={isAuthenticated} />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <BenefitsSection />
+      <CTASection isAuthenticated={isAuthenticated} />
+      <Footer />
     </div>
   );
 }

@@ -77,9 +77,9 @@ export const Topbar = () => {
             <div className="text-sm text-muted-foreground">Cargando...</div>
           ) : session ? (
             <>
-              <ButtonLink href="/" variant="link">
+              <ButtonLink href="/dashboard" variant="link">
                 <span className="flex items-center gap-2">
-                  Lista de Alumnos
+                  Dashboard
                   <Users className="h-4 w-4" />
                 </span>
               </ButtonLink>

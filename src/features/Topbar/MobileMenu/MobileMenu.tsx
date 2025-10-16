@@ -45,14 +45,14 @@ export const MobileMenu = ({
               <>
                 {/* Navigation Links */}
                 <ButtonLink
-                  href="/"
+                  href="/dashboard"
                   variant="ghost"
                   className="w-full justify-start"
                   onClick={onClose}
                 >
                   <span className="flex items-center gap-3">
                     <Users className="h-5 w-5" />
-                    Lista de Alumnos
+                    Dashboard
                   </span>
                 </ButtonLink>
 

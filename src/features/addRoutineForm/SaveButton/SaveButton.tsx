@@ -20,6 +20,7 @@ export const SaveButton = ({
   const { resetRoutine } = useRoutineStore();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -100,10 +101,14 @@ export const SaveButton = ({
       setError("Por favor selecciona un estudiante");
       return;
     }
+    setIsGenerating(true);
+    setError("");
     try {
       await generatePDF(routine);
     } catch {
       setError("Error al generar el PDF");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -125,16 +130,16 @@ export const SaveButton = ({
           variant="outline"
           size="lg"
           className="px-8 flex items-center gap-2"
-          disabled={!routine.studentId}
+          disabled={!routine.studentId || isGenerating || isSaving}
         >
           <FileText className="h-4 w-4" />
-          Generar PDF
+          {isGenerating ? "Generando..." : "Generar PDF"}
         </Button>
         <Button
           onClick={handleSaveToStudent}
           size="lg"
           className="px-8 flex items-center gap-2"
-          disabled={isSaving || (!routine.studentId && !isEditMode)}
+          disabled={isSaving || isGenerating || (!routine.studentId && !isEditMode)}
         >
           <Save className="h-4 w-4" />
           {isSaving

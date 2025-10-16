@@ -1,9 +1,11 @@
 "use client";
 
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isPasswordValid } from "@/utils/passwordStrength";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useReducer } from "react";
@@ -24,10 +26,10 @@ export default function SignUp() {
       return;
     }
 
-    if (state.password.length < 6) {
+    if (!isPasswordValid(state.password)) {
       dispatch({
         type: "SET_ERROR",
-        payload: "La contraseña debe tener al menos 6 caracteres",
+        payload: "La contraseña no cumple con los requisitos mínimos",
       });
       dispatch({ type: "SET_LOADING", payload: false });
       return;
@@ -97,7 +99,7 @@ export default function SignUp() {
                 disabled={state.isLoading}
               />
             </div>
-            <div>
+            <div className="flex flex-col items-center">
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
@@ -108,8 +110,8 @@ export default function SignUp() {
                 }
                 required
                 disabled={state.isLoading}
-                minLength={6}
               />
+              <PasswordStrengthIndicator password={state.password} />
             </div>
             <div>
               <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
@@ -132,7 +134,15 @@ export default function SignUp() {
                 {state.error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={state.isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={
+                state.isLoading || 
+                !isPasswordValid(state.password) ||
+                state.password !== state.confirmPassword
+              }
+            >
               {state.isLoading ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
           </form>

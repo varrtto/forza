@@ -26,6 +26,7 @@ export interface Routine {
   name: string;
   studentId?: string;
   days: Day[];
+  isFullBody?: boolean;
 }
 
 export interface Student {

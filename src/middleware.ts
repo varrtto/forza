@@ -1,8 +1,19 @@
 import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
-    // Add any additional middleware logic here
+
+    const { pathname } = req.nextUrl;
+
+    if (
+      pathname.startsWith("/_next/") ||
+      pathname.startsWith("/static/") ||
+      pathname.startsWith("/favicon.ico") ||
+      pathname.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)
+    ) {
+      return NextResponse.next();
+    }
   },
   {
     callbacks: {
@@ -36,6 +47,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|hero.jpg).*)",
   ],
 };
