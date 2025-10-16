@@ -73,7 +73,7 @@ export const MuscleGroupCard = ({
           muscleGroup.exercises.map((exercise) => (
             <div
               key={exercise.id}
-              className="p-2 bg-muted/30 rounded-lg relative"
+              className="p-2 bg-muted/30 rounded-lg relative overflow-hidden"
             >
               <Button
                 variant="ghost"
@@ -85,10 +85,10 @@ export const MuscleGroupCard = ({
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
-              <div className="flex items-start gap-3">
-                <div className="flex-1 space-y-4">
+              <div className="flex items-start gap-3 pr-8">
+                <div className="flex-1 min-w-0 space-y-4">
                   {/* Exercise Name - Now a combobox */}
-                  <div>
+                  <div className="min-w-0">
                     <Label
                       htmlFor={`exercise-name-${exercise.id}`}
                       className="text-xs text-muted-foreground"
@@ -108,10 +108,10 @@ export const MuscleGroupCard = ({
                         )
                       }
                     >
-                      <SelectTrigger className="mt-1">
+                      <SelectTrigger className="mt-1 !w-full max-w-full [&>span]:truncate [&>span]:block">
                         <SelectValue placeholder="Selecciona un ejercicio" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-w-[calc(100vw-2rem)]">
                         {EXERCISES_BY_MUSCLE_GROUP[
                           muscleGroup.name as keyof typeof EXERCISES_BY_MUSCLE_GROUP
                         ]?.map((exerciseName) => (
