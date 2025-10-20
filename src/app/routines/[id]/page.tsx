@@ -54,14 +54,26 @@ export default function RoutineDetailPage({
     setIsGenerating(true);
     setError("");
     try {
-      // Import generatePDF dynamically
-      const { generatePDF } = await import("@/utils/generatePDF");
-      await generatePDF(routine.routine_data);
-    } catch {
-      setError("Error al generar el PDF");
-    } finally {
-      setIsGenerating(false);
-    }
+      // Fetch user profile to get avatar URL for watermark
+      let avatarUrl;
+      try {
+        const profileResponse = await fetch("/api/user/profile");
+        if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+          avatarUrl = profileData.user.avatar_url;
+        }
+      } catch (profileError) {
+        console.warn("Could not fetch user profile for watermark:", profileError);
+      }
+
+  // Import generatePDF dynamically
+  const { generatePDF } = await import("@/utils/generatePDF");
+  await generatePDF(routine.routine_data, avatarUrl);
+  } catch {
+  setError("Error al generar el PDF");
+  } finally {
+  setIsGenerating(false);
+  }
   };
 
   if (loading) {

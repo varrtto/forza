@@ -1,37 +1,28 @@
-"use client";
 
-import { Button } from "@/components/ui/button";
+
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { HeroButtons } from "./HeroButtons/HeroButtons";
+
 
 interface HeroSectionProps {
   isAuthenticated: boolean;
 }
 
 export function HeroSection({ isAuthenticated }: HeroSectionProps) {
-  const router = useRouter();
 
-  const handleGetStarted = () => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
-    } else {
-      router.push("/auth/signin");
-    }
-  };
 
   return (
     <section className="relative px-4 py-20 md:py-32 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/hero.jpg"
+          src="/hero.webp"
           alt="Hero background"
           fill
           className="object-cover"
           priority
           quality={85}
-          
+          sizes="100vw"
         />
       </div>
       
@@ -48,25 +39,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             La plataforma completa para entrenadores personales. Crea rutinas,
             gestiona clases y genera rutinas profesionales en segundos.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <Button 
-              size="lg" 
-              onClick={handleGetStarted} 
-              className="text-lg px-8 bg-white text-black hover:bg-gray-100"
-            >
-              {isAuthenticated ? "Ir al Dashboard" : "Comenzar Ahora"}
-            </Button>
-            {!isAuthenticated && (
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="text-lg px-8 border-2 border-white bg-transparent !text-white hover:bg-white hover:!text-black transition-colors"
-              >
-                <Link href="/auth/signup">Crear Cuenta</Link>
-              </Button>
-            )}
-          </div>
+          <HeroButtons isAuthenticated={isAuthenticated} />
         </div>
       </div>
     </section>

@@ -104,12 +104,24 @@ export const SaveButton = ({
     setIsGenerating(true);
     setError("");
     try {
-      await generatePDF(routine);
+      // Fetch user profile to get avatar URL for watermark
+        let avatarUrl;
+      try {
+          const profileResponse = await fetch("/api/user/profile");
+        if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+              avatarUrl = profileData.user.avatar_url;
+            }
+          } catch (profileError) {
+            console.warn("Could not fetch user profile for watermark:", profileError);
+          }
+
+          await generatePDF(routine, avatarUrl);
     } catch {
-      setError("Error al generar el PDF");
-    } finally {
-      setIsGenerating(false);
-    }
+  setError("Error al generar el PDF");
+  } finally {
+  setIsGenerating(false);
+  }
   };
 
   return (

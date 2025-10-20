@@ -1,5 +1,6 @@
 "use client";
 
+import { AvatarCropModal } from "@/components/AvatarCropModal";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -37,6 +38,8 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isDeletingAvatar, setIsDeletingAvatar] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormData>({
@@ -103,12 +106,24 @@ export default function ProfilePage() {
       return;
     }
 
+    setSelectedFile(file);
+    setShowCropModal(true);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCroppedImage = async (croppedImageBlob: Blob) => {
+    setShowCropModal(false);
     setIsUploadingAvatar(true);
     setError("");
+    setSelectedFile(null);
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", croppedImageBlob, "avatar.jpg");
 
       const response = await fetch("/api/user/avatar", {
         method: "POST",
@@ -130,10 +145,6 @@ export default function ProfilePage() {
       setError("Error de conexión. Intenta nuevamente.");
     } finally {
       setIsUploadingAvatar(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
   };
 
@@ -338,6 +349,18 @@ export default function ProfilePage() {
           </Form>
         </div>
       </div>
+
+      {/* Avatar Crop Modal */}
+      <AvatarCropModal
+        isOpen={showCropModal}
+        onClose={() => {
+          setShowCropModal(false);
+          setSelectedFile(null);
+        }}
+        imageFile={selectedFile}
+        onCropComplete={handleCroppedImage}
+        isUploading={isUploadingAvatar}
+      />
     </div>
   );
 }

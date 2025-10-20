@@ -2,7 +2,129 @@ import { Routine } from "@/types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const generateCompactPDF = async (routine: Routine, studentName: string) => {
+// Helper function to convert image to grayscale
+const convertToGrayscale = (imageData: ImageData): ImageData => {
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    // Calculate grayscale value using luminance formula
+    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+    data[i] = gray;     // Red
+    data[i + 1] = gray; // Green
+    data[i + 2] = gray; // Blue
+    // Alpha channel (data[i + 3]) remains unchanged
+  }
+  return imageData;
+};
+
+// Helper function to add watermark
+const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
+  if (!avatarUrl) return;
+
+  try {
+    // Load image from URL
+    const response = await fetch(avatarUrl);
+    const blob = await response.blob();
+
+    // Convert blob to base64
+    const base64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+
+    // Create canvas for image processing
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not get canvas context');
+
+    // Load image onto canvas
+    const img = new Image();
+    img.src = base64;
+    await new Promise((resolve) => {
+      img.onload = resolve;
+    });
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.drawImage(img, 0, 0);
+
+    // Get image data and convert to grayscale
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const grayscaleData = convertToGrayscale(imageData);
+    ctx.putImageData(grayscaleData, 0, 0);
+
+    // Convert canvas back to base64
+    const grayscaleBase64 = canvas.toDataURL('image/jpeg', 0.9);
+
+    const imgWidth = img.width;
+    const imgHeight = img.height;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Calculate smaller watermark size for repeating pattern
+    const watermarkSize = Math.min(pageWidth * 0.15, pageHeight * 0.15);
+    const aspectRatio = imgWidth / imgHeight;
+    let watermarkWidth, watermarkHeight;
+
+    if (aspectRatio > 1) {
+      // Landscape
+      watermarkWidth = watermarkSize;
+      watermarkHeight = watermarkSize / aspectRatio;
+    } else {
+      // Portrait
+      watermarkHeight = watermarkSize;
+      watermarkWidth = watermarkSize * aspectRatio;
+    }
+
+    // Calculate spacing for diagonal grid pattern
+    const horizontalSpacing = watermarkWidth * 1.5;
+    const verticalSpacing = watermarkHeight * 1.5;
+    const diagonalOffset = watermarkWidth * 0.75; // Offset for diagonal pattern
+
+    // Save current graphics state
+    doc.saveGraphicsState();
+
+    // Set low opacity for watermark (avoid use of 'any')
+    // @ts-expect-error: GState typing not present in jsPDF types, but safe for supported builds
+    doc.setGState(new doc.GState({ opacity: 0.04 }));
+
+    // Add watermark grid to all existing pages
+    const totalPages = doc.getNumberOfPages();
+    for (let page = 1; page <= totalPages; page++) {
+      doc.setPage(page);
+
+      // Calculate how many watermarks fit horizontally and vertically
+      const cols = Math.ceil((pageWidth + watermarkWidth) / horizontalSpacing) + 1;
+      const rows = Math.ceil((pageHeight + watermarkHeight) / verticalSpacing) + 1;
+
+      // Create diagonal grid pattern
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          // Calculate position with diagonal offset
+          const baseX = col * horizontalSpacing;
+          const baseY = row * verticalSpacing;
+          const offsetX = (row % 2) * diagonalOffset; // Alternate offset for diagonal effect
+
+          const x = baseX - offsetX - watermarkWidth * 0.5; // Center the pattern
+          const y = baseY - watermarkHeight * 0.5;
+
+          // Only add if the watermark would be visible on the page
+          if (x + watermarkWidth > -watermarkWidth && x < pageWidth + watermarkWidth &&
+              y + watermarkHeight > -watermarkHeight && y < pageHeight + watermarkHeight) {
+            doc.addImage(grayscaleBase64, 'JPEG', x, y, watermarkWidth, watermarkHeight);
+          }
+        }
+      }
+    }
+
+    // Restore graphics state
+    doc.restoreGraphicsState();
+  } catch (error) {
+    console.warn('Failed to add watermark:', error);
+  }
+};
+
+const generateCompactPDF = async (routine: Routine, studentName: string, avatarUrl?: string) => {
   const doc = new jsPDF();
 
   // Title
@@ -96,10 +218,13 @@ const generateCompactPDF = async (routine: Routine, studentName: string) => {
     }
   });
 
+  // Add watermark if avatar URL is provided
+  await addWatermark(doc, avatarUrl);
+
   doc.save(`Rutina_FullBody_${studentName.replace(/\s+/g, "_")}.pdf`);
 };
 
-export const generatePDF = async (routine: Routine) => {
+export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
   // Fetch student name if studentId is available
   let studentName = "Estudiante";
   if (routine.studentId) {
@@ -121,7 +246,7 @@ export const generatePDF = async (routine: Routine) => {
 
   // Use compact PDF for full body routines
   if (routine.isFullBody) {
-    return generateCompactPDF(routine, studentName);
+    return generateCompactPDF(routine, studentName, avatarUrl);
   }
 
   const doc = new jsPDF();
@@ -231,7 +356,10 @@ export const generatePDF = async (routine: Routine) => {
       doc.addPage();
       y = 15;
     }
-  });
+    });
+
+    // Add watermark if avatar URL is provided
+  await addWatermark(doc, avatarUrl);
 
   doc.save(`Rutina_${studentName.replace(/\s+/g, "_")}.pdf`);
 };
