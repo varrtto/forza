@@ -144,6 +144,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Extensión en polea c/soga",
     "Extensión en polea alta de espalda",
     "Extensión en polea a 1 mano",
+    "Extensión vertical con barra",
     "Press francés en bco plano c/ barra ( clase skull) y c/ mancuerna",
     "Extensión vertical a 1 mano",
     "Extensión vertical c/ mancuerna",
