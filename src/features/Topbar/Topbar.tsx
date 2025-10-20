@@ -38,7 +38,7 @@ export const Topbar = () => {
   return (
     <>
       {/* Main Topbar */}
-      <div className="flex sticky top-0 justify-between items-center bg-background border-b border-border p-2 z-50">
+      <div className="flex sticky top-0 justify-between items-center bg-background border-b border-border p-2 z-50 h-[72px]">
         <Link
           href="/"
           onClick={closeMobileMenu}

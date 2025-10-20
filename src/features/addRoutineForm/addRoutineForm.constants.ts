@@ -31,6 +31,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Sentadillas single",
     "Sentadillas búlgaras",
     "Sentadillas c/ land mine",
+    "Peso muerto Rumano",
     "Estocadas split",
     "Estocadas laterales",
     "Sentadillas estáticas",

@@ -50,8 +50,8 @@ export const MobileMenu = ({
                   className="w-full justify-start"
                   onClick={onClose}
                 >
-                  <span className="flex items-center gap-3">
-                    <Users className="h-5 w-5" />
+                  <span className="flex items-center gap-3 text-lg">
+                    <Users size={48} />
                     Dashboard
                   </span>
                 </ButtonLink>
@@ -62,8 +62,8 @@ export const MobileMenu = ({
                   className="w-full justify-start"
                   onClick={onClose}
                 >
-                  <span className="flex items-center gap-3">
-                    <UserPlus className="h-5 w-5" />
+                  <span className="flex items-center gap-3 text-lg">
+                    <UserPlus size={48} />
                     Agregar alumno
                   </span>
                 </ButtonLink>
@@ -74,8 +74,8 @@ export const MobileMenu = ({
                   className="w-full justify-start"
                   onClick={onClose}
                 >
-                  <span className="flex items-center gap-3">
-                    <Settings className="h-5 w-5" />
+                  <span className="flex items-center gap-3 text-lg">
+                    <Settings size={48} />
                     Mi Perfil
                   </span>
                 </ButtonLink>
@@ -86,8 +86,8 @@ export const MobileMenu = ({
                   className="w-full justify-start text-destructive hover:text-destructive"
                   onClick={onSignOut}
                 >
-                  <span className="flex items-center gap-3">
-                    <LogOut className="h-5 w-5" />
+                  <span className="flex items-center gap-3 text-lg">
+                    <LogOut size={48} />
                     Cerrar Sesión
                   </span>
                 </Button>
