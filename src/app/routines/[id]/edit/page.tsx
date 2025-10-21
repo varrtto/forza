@@ -93,7 +93,6 @@ export default function EditRoutinePage({
       <div className="w-full max-w-xl mx-auto">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 mb-6">
-          <p className="text-sm">Editar Rutina</p>
           <h1 className="text-2xl font-bold text-center">
             {routine.students.name}
           </h1>

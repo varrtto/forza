@@ -90,16 +90,11 @@ export default function EditStudentPage({
   }
 
   return (
-    <div className="font-sans min-h-screen items-center justify-items-center pt-10">
+    <div className="flex flex-col justify-center items-center min-h-[calc(100vh-72px)]">
       <div className="w-full max-w-xl mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col items-center gap-4 mb-6">
-          <div>
-            <p className="text-foreground text-sm text-center">
-              Editar Estudiante
-            </p>
-            <h1 className="text-2xl font-bold text-center">{student.name}</h1>
-          </div>
+          <h1 className="text-2xl font-bold text-center">{student.name}</h1>
           <Button
             onClick={() => router.push(`/students/${resolvedParams.id}`)}
             variant="outline"

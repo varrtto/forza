@@ -9,7 +9,7 @@ function AddRoutineContent() {
   const studentId = searchParams.get("studentId");
 
   return (
-    <div className="font-sans min-h-screen items-center justify-items-center pt-10 px-4 md:px-0">
+    <div className="flex flex-col justify-center items-center min-h-[calc(100vh-72px)]">
       <div className="w-full max-w-xl">
         <AddRoutineForm preSelectedStudentId={studentId} />
       </div>

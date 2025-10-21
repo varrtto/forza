@@ -151,14 +151,14 @@ export default function StudentDetailPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="flex flex-col justify-center items-center min-h-[calc(100vh-72px)]">
+      <div className="min-w-[60%] max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col items-center justify-between mb-6 gap-4">
           <h1 className="text-3xl font-bold">{student.name}</h1>
           <div className="flex md:items-center justify-between md:justify-center md:gap-4 w-full">
             <Button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/dashboard")}
               variant="outline"
               size="sm"
             >

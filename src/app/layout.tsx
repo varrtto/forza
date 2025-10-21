@@ -31,7 +31,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Topbar />
-          {children}
+          <div className="flex flex-col min-h-[calc(100vh-72px)]">
+            {children}
+          </div>
         </AuthProvider>
       </body>
     </html>

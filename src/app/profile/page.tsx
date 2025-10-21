@@ -226,7 +226,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen items-center pt-10 px-4">
+    <div className="flex flex-col items-center pt-10 px-4">
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Mi Perfil</h1>

@@ -1,7 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
@@ -43,67 +49,66 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            Recuperar Contraseña
-          </CardTitle>
-          <CardDescription className="text-center">
-            Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {success ? (
-            <div className="space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-sm text-green-800 text-center">
-                  ✓ Si el email existe en nuestro sistema, recibirás un enlace de
-                  recuperación en los próximos minutos.
-                </p>
-              </div>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/auth/signin">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Volver al inicio de sesión
-                </Link>
-              </Button>
+    <Card className="w-full max-w-md">
+      <CardHeader>
+        <CardTitle className="text-2xl text-center">
+          Recuperar Contraseña
+        </CardTitle>
+        <CardDescription className="text-center">
+          Ingresa tu email y te enviaremos un enlace para restablecer tu
+          contraseña
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {success ? (
+          <div className="space-y-4">
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800 text-center">
+                ✓ Si el email existe en nuestro sistema, recibirás un enlace de
+                recuperación en los próximos minutos.
+              </p>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/auth/signin">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver al inicio de sesión
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="tu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
+                {error}
               </div>
+            )}
 
-              {error && (
-                <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
-                  {error}
-                </div>
-              )}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Enviando..." : "Enviar enlace de recuperación"}
+            </Button>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Enviando..." : "Enviar enlace de recuperación"}
-              </Button>
-
-              <Button asChild variant="ghost" className="w-full">
-                <Link href="/auth/signin">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Volver al inicio de sesión
-                </Link>
-              </Button>
-            </form>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <Button asChild variant="ghost" className="w-full">
+              <Link href="/auth/signin">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Volver al inicio de sesión
+              </Link>
+            </Button>
+          </form>
+        )}
+      </CardContent>
+    </Card>
   );
 }

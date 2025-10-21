@@ -125,7 +125,7 @@ export const AddStudentForm = ({
           if (isEditMode && studentId) {
             router.push(`/students/${studentId}`);
           } else {
-            router.push("/");
+            router.push("/dashboard");
           }
         }, 1500);
       } else {

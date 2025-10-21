@@ -44,6 +44,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Curl Nórdico y variaciones",
     "Subida al Cajon unilateral",
     "Buenos dias",
+    "Elevaciones de talones",
   ],
   Glúteos: [
     "Extensión de cadera patada atrás parado",
@@ -51,6 +52,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Cadera puente",
     "Hip trhust",
     "Aperturas de rodillas acostado de lado c/ banda",
+    "Plancha oso c/ tobilleras",
   ],
   "Abductores y aductores": [
     "Aperturas de piernas c/ tobilleras de lado",
