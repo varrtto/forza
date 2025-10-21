@@ -66,7 +66,6 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Crear Cuenta</CardTitle>
@@ -99,7 +98,7 @@ export default function SignUp() {
                 disabled={state.isLoading}
               />
             </div>
-            <div className="flex flex-col items-center">
+            <div>
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
@@ -159,6 +158,5 @@ export default function SignUp() {
           </div>
         </CardContent>
       </Card>
-    </div>
   );
 }

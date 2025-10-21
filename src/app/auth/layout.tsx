@@ -14,5 +14,5 @@ export default async function AuthLayout({
     redirect("/");
   }
 
-  return <>{children}</>;
+  return <div className="flex flex-col h-[calc(100vh-72px)] items-center justify-center bg-gray-50 px-4">{children}</div>;
 }

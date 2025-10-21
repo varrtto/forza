@@ -42,7 +42,6 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">Iniciar Sesión</CardTitle>
@@ -58,6 +57,7 @@ export default function SignIn() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                tabIndex={1}
               />
             </div>
             <div>
@@ -77,12 +77,13 @@ export default function SignIn() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
+                tabIndex={2}
               />
             </div>
             {error && (
               <div className="text-red-500 text-sm text-center">{error}</div>
             )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !email || !password}>
               {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
             </Button>
           </form>
@@ -99,6 +100,5 @@ export default function SignIn() {
           </div>
         </CardContent>
       </Card>
-    </div>
   );
 }

@@ -48,6 +48,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - .webp files (image files)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.webp$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.webp$|.*\\.png$).*)",
   ],
 };
