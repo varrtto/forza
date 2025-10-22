@@ -21,8 +21,13 @@ export const CreateRoutineCard = ({
   preSelectedStudentId,
   isEditMode = false,
 }: CreateRoutineCardProps) => {
-  const { routine, addDay, updateSelectedStudent, resetRoutine, setRoutineType } =
-    useRoutineStore();
+  const {
+    routine,
+    addDay,
+    updateSelectedStudent,
+    resetRoutine,
+    setRoutineType,
+  } = useRoutineStore();
   const { data: session } = useSession();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,23 +147,37 @@ export const CreateRoutineCard = ({
             </div>
           )}
           <div className="space-y-3 pt-2">
-          <Label className="text-sm font-medium">Tipo de Rutina</Label>
-          <ToggleGroup
-          type="single"
-          value={routine.type || 'regular'}
-          onValueChange={(value) => value && setRoutineType(value as RoutineType)}
-          className="justify-start"
-          >
-          <ToggleGroupItem value="regular" aria-label="Rutina Regular">
-          Rutina Regular
-          </ToggleGroupItem>
-          <ToggleGroupItem value="fullBody" aria-label="Rutina Completa">
-          Rutina Full Body
-          </ToggleGroupItem>
-          <ToggleGroupItem value="pushPullLegs" aria-label="Empuje/Tirón/Piernas">
-          Empuje/Tirón/Piernas
-          </ToggleGroupItem>
-          </ToggleGroup>
+            <ToggleGroup
+              type="single"
+              value={routine.type || "regular"}
+              onValueChange={(value) =>
+                value && setRoutineType(value as RoutineType)
+              }
+              className="justify-start flex flex-col md:flex-row border "
+              spacing={0.1}
+            >
+              <ToggleGroupItem
+                value="regular"
+                aria-label="Rutina Regular"
+                className="rounded-none rounded-t-md md:rounded-none md:rounded-l-md w-full md:w-auto"
+              >
+                Rutina Regular
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="fullBody"
+                aria-label="Rutina Completa"
+                className="rounded-none w-full md:w-auto"
+              >
+                Rutina Full Body
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="pushPullLegs"
+                aria-label="Empuje/Tirón/Piernas"
+                className="rounded-none rounded-b-md md:rounded-none md:rounded-r-md w-full md:w-auto"
+              >
+                Empuje/Tirón/Piernas
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
         </div>
       </CardContent>

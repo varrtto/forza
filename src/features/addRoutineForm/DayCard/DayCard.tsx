@@ -28,8 +28,11 @@ export const DayCard = ({ day }: { day: Day }) => {
         allowedMuscleGroups = ['Espalda', 'Biceps'];
       } else if (cyclePosition === 2) {
         // Legs days
-        allowedMuscleGroups = ['Piernas', 'Glúteos'];
+        allowedMuscleGroups = ['Piernas', 'Glúteos', 'Femorales', 'Gemelos'];
       }
+
+      // Always include Abdominales, PSOAS, and Isometricos for all days
+      allowedMuscleGroups = [...allowedMuscleGroups, 'Abdominales', 'PSOAS', 'Isometricos'];
     }
 
     return allowedMuscleGroups.filter(
