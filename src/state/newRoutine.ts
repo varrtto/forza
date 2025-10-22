@@ -1,11 +1,11 @@
-import { Day, Exercise, Routine } from "@/types";
+import { Day, Exercise, Routine, RoutineType } from "@/types";
 import { create } from "zustand";
 
 export interface RoutineStore {
   routine: Routine;
   updateAlumnoName: (name: string) => void;
   updateSelectedStudent: (studentId: string) => void;
-  toggleFullBody: () => void;
+  setRoutineType: (type: RoutineType) => void;
   resetRoutine: () => void;
   loadRoutine: (routine: Routine) => void;
   addDay: (day: Day) => void;
@@ -97,9 +97,9 @@ const useRoutineStore = create<RoutineStore>((set) => ({
     set((state) => ({
       routine: { ...state.routine, studentId: studentId },
     })),
-  toggleFullBody: () =>
+  setRoutineType: (type: RoutineType) =>
     set((state) => ({
-      routine: { ...state.routine, isFullBody: !state.routine.isFullBody },
+      routine: { ...state.routine, type: type },
     })),
   resetRoutine: () =>
     set(() => ({
@@ -108,6 +108,7 @@ const useRoutineStore = create<RoutineStore>((set) => ({
         name: "",
         studentId: undefined,
         days: [],
+        type: "regular",
       } as Routine,
     })),
   loadRoutine: (routine: Routine) =>

@@ -21,12 +21,16 @@ export interface Day {
   muscleGroups: MuscleGroup[];
 }
 
+export type RoutineType = 'regular' | 'fullBody' | 'pushPullLegs';
+
 export interface Routine {
-  id: string;
-  name: string;
-  studentId?: string;
-  days: Day[];
-  isFullBody?: boolean;
+id: string;
+name: string;
+studentId?: string;
+   days: Day[];
+   type?: RoutineType;
+   // Keep isFullBody for backward compatibility during migration
+   isFullBody?: boolean;
 }
 
 export interface Student {

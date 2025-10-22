@@ -2,11 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import useRoutineStore from "@/state/newRoutine";
-import { Student } from "@/types";
+import { RoutineType, Student } from "@/types";
 import { Plus, RotateCcw } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ export const CreateRoutineCard = ({
   preSelectedStudentId,
   isEditMode = false,
 }: CreateRoutineCardProps) => {
-  const { routine, addDay, updateSelectedStudent, resetRoutine, toggleFullBody } =
+  const { routine, addDay, updateSelectedStudent, resetRoutine, setRoutineType } =
     useRoutineStore();
   const { data: session } = useSession();
   const [students, setStudents] = useState<Student[]>([]);
@@ -141,18 +141,24 @@ export const CreateRoutineCard = ({
               )}
             </div>
           )}
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox
-              id="fullBody"
-              checked={routine.isFullBody || false}
-              onCheckedChange={toggleFullBody}
-            />
-            <Label
-              htmlFor="fullBody"
-              className="text-sm font-normal cursor-pointer"
-            >
-              Rutina Full Body (PDF compacto)
-            </Label>
+          <div className="space-y-3 pt-2">
+          <Label className="text-sm font-medium">Tipo de Rutina</Label>
+          <ToggleGroup
+          type="single"
+          value={routine.type || 'regular'}
+          onValueChange={(value) => value && setRoutineType(value as RoutineType)}
+          className="justify-start"
+          >
+          <ToggleGroupItem value="regular" aria-label="Rutina Regular">
+          Rutina Regular
+          </ToggleGroupItem>
+          <ToggleGroupItem value="fullBody" aria-label="Rutina Completa">
+          Rutina Full Body
+          </ToggleGroupItem>
+          <ToggleGroupItem value="pushPullLegs" aria-label="Empuje/Tirón/Piernas">
+          Empuje/Tirón/Piernas
+          </ToggleGroupItem>
+          </ToggleGroup>
           </div>
         </div>
       </CardContent>

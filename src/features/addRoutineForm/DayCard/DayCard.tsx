@@ -13,7 +13,26 @@ export const DayCard = ({ day }: { day: Day }) => {
     const day = routine.days.find((d) => d.id === dayId);
     if (!day) return MUSCLE_GROUPS;
 
-    return MUSCLE_GROUPS.filter(
+    let allowedMuscleGroups = MUSCLE_GROUPS;
+
+    // Filter muscle groups based on routine type
+    if (routine.type === 'pushPullLegs') {
+      const dayIndex = routine.days.findIndex((d) => d.id === dayId);
+      const cyclePosition = dayIndex % 3; // 0: Push, 1: Pull, 2: Legs
+
+      if (cyclePosition === 0) {
+        // Push days
+        allowedMuscleGroups = ['Pecho', 'Hombros', 'Triceps'];
+      } else if (cyclePosition === 1) {
+        // Pull days
+        allowedMuscleGroups = ['Espalda', 'Biceps'];
+      } else if (cyclePosition === 2) {
+        // Legs days
+        allowedMuscleGroups = ['Piernas', 'Glúteos'];
+      }
+    }
+
+    return allowedMuscleGroups.filter(
       (mg) => !day.muscleGroups.some((dayMg) => dayMg.name === mg)
     );
   };

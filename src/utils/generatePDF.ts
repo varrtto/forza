@@ -2,13 +2,34 @@ import { Routine } from "@/types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+// Helper function to migrate old routine format to new format
+const migrateRoutineData = (routine: Routine): Routine => {
+  // If routine already has type field, no migration needed
+  if (routine.type) {
+    return routine;
+  }
+
+  // Migrate from isFullBody boolean to type field
+  const migratedRoutine = { ...routine };
+  if (migratedRoutine.isFullBody === true) {
+    migratedRoutine.type = "fullBody";
+  } else {
+    migratedRoutine.type = "regular";
+  }
+
+  // Remove the old field to clean up
+  delete migratedRoutine.isFullBody;
+
+  return migratedRoutine;
+};
+
 // Helper function to convert image to grayscale
 const convertToGrayscale = (imageData: ImageData): ImageData => {
   const data = imageData.data;
   for (let i = 0; i < data.length; i += 4) {
     // Calculate grayscale value using luminance formula
     const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-    data[i] = gray;     // Red
+    data[i] = gray; // Red
     data[i + 1] = gray; // Green
     data[i + 2] = gray; // Blue
     // Alpha channel (data[i + 3]) remains unchanged
@@ -33,9 +54,9 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
     });
 
     // Create canvas for image processing
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Could not get canvas context');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not get canvas context");
 
     // Load image onto canvas
     const img = new Image();
@@ -54,7 +75,7 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
     ctx.putImageData(grayscaleData, 0, 0);
 
     // Convert canvas back to base64
-    const grayscaleBase64 = canvas.toDataURL('image/jpeg', 0.9);
+    const grayscaleBase64 = canvas.toDataURL("image/jpeg", 0.9);
 
     const imgWidth = img.width;
     const imgHeight = img.height;
@@ -94,8 +115,10 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
       doc.setPage(page);
 
       // Calculate how many watermarks fit horizontally and vertically
-      const cols = Math.ceil((pageWidth + watermarkWidth) / horizontalSpacing) + 1;
-      const rows = Math.ceil((pageHeight + watermarkHeight) / verticalSpacing) + 1;
+      const cols =
+        Math.ceil((pageWidth + watermarkWidth) / horizontalSpacing) + 1;
+      const rows =
+        Math.ceil((pageHeight + watermarkHeight) / verticalSpacing) + 1;
 
       // Create diagonal grid pattern
       for (let row = 0; row < rows; row++) {
@@ -109,9 +132,20 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
           const y = baseY - watermarkHeight * 0.5;
 
           // Only add if the watermark would be visible on the page
-          if (x + watermarkWidth > -watermarkWidth && x < pageWidth + watermarkWidth &&
-              y + watermarkHeight > -watermarkHeight && y < pageHeight + watermarkHeight) {
-            doc.addImage(grayscaleBase64, 'JPEG', x, y, watermarkWidth, watermarkHeight);
+          if (
+            x + watermarkWidth > -watermarkWidth &&
+            x < pageWidth + watermarkWidth &&
+            y + watermarkHeight > -watermarkHeight &&
+            y < pageHeight + watermarkHeight
+          ) {
+            doc.addImage(
+              grayscaleBase64,
+              "JPEG",
+              x,
+              y,
+              watermarkWidth,
+              watermarkHeight
+            );
           }
         }
       }
@@ -120,11 +154,15 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
     // Restore graphics state
     doc.restoreGraphicsState();
   } catch (error) {
-    console.warn('Failed to add watermark:', error);
+    console.warn("Failed to add watermark:", error);
   }
 };
 
-const generateCompactPDF = async (routine: Routine, studentName: string, avatarUrl?: string) => {
+const generateCompactPDF = async (
+  routine: Routine,
+  studentName: string,
+  avatarUrl?: string
+) => {
   const doc = new jsPDF();
 
   // Title
@@ -166,7 +204,8 @@ const generateCompactPDF = async (routine: Routine, studentName: string, avatarU
           exercise: ex.name || "(Sin nombre)",
           series: ex.series && ex.series > 0 ? ex.series : "-",
           reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
-          weights: ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
+          weights:
+            ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
         });
       });
     });
@@ -224,16 +263,156 @@ const generateCompactPDF = async (routine: Routine, studentName: string, avatarU
   doc.save(`Rutina_FullBody_${studentName.replace(/\s+/g, "_")}.pdf`);
 };
 
+const generatePushPullLegsPDF = async (
+  routine: Routine,
+  studentName: string,
+  avatarUrl?: string
+) => {
+  const doc = new jsPDF();
+
+  // Title
+  doc.setFontSize(18);
+  doc.setFont("", "bold");
+  doc.text(`Rutina Empuje/Tirón/Piernas - ${studentName}`, 7, 12);
+  doc.setFont("", "normal");
+  doc.setFontSize(9);
+  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 17);
+
+  let y = 25;
+  const pageHeight = 297;
+  const pageWidth = 210;
+  const margin = 7;
+
+  // Group days by push/pull/legs based on cycle position
+  const pushDays = routine.days.filter((_, index) => index % 3 === 0);
+  const pullDays = routine.days.filter((_, index) => index % 3 === 1);
+  const legsDays = routine.days.filter((_, index) => index % 3 === 2);
+
+  const sections = [
+    { title: "DÍAS DE EMPUJE", days: pushDays },
+    { title: "DÍAS DE TIRÓN", days: pullDays },
+    { title: "DÍAS DE PIERNAS", days: legsDays },
+  ];
+
+  sections.forEach((section, sectionIdx) => {
+    if (section.days.length === 0) return;
+
+    // Section header
+    doc.setFillColor(200, 200, 200);
+    doc.rect(margin, y - 3, pageWidth - 2 * margin, 8, "F");
+    doc.setFontSize(14);
+    doc.setFont("", "bold");
+    doc.text(section.title, margin + 2, y + 2);
+    doc.setFont("", "normal");
+    y += 10;
+
+    section.days.forEach((day, dayIdx) => {
+      // Day header - more compact
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, y - 3, pageWidth - 2 * margin, 6, "F");
+      doc.setFontSize(12);
+      doc.setFont("", "bold");
+      doc.text(`${day.name}`, margin + 2, y + 1);
+      doc.setFont("", "normal");
+      y += 8;
+
+      // Collect all exercises for this day
+      const allExercises: Array<{
+        muscleGroup: string;
+        exercise: string;
+        series: string | number;
+        reps: string;
+        weights: string;
+      }> = [];
+
+      day.muscleGroups.forEach((mg) => {
+        mg.exercises.forEach((ex) => {
+          allExercises.push({
+            muscleGroup: mg.name,
+            exercise: ex.name || "(Sin nombre)",
+            series: ex.series && ex.series > 0 ? ex.series : "-",
+            reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
+            weights:
+              ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
+          });
+        });
+      });
+
+      // Render compact table
+      autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        columns: [
+          { header: "Grupo", dataKey: "muscleGroup" },
+          { header: "Ejercicio", dataKey: "exercise" },
+          { header: "Series", dataKey: "series" },
+          { header: "Reps", dataKey: "reps" },
+          { header: "Peso", dataKey: "weights" },
+        ],
+        body: allExercises,
+        headStyles: {
+          fillColor: [100, 100, 100],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 10,
+          cellPadding: 1.5,
+        },
+        styles: {
+          fontSize: 10,
+          cellPadding: 1.5,
+          lineColor: [200, 200, 200],
+          lineWidth: 0.1,
+        },
+        alternateRowStyles: {
+          fillColor: [250, 250, 250],
+        },
+        columnStyles: {
+          muscleGroup: { cellWidth: 32 },
+          exercise: { cellWidth: 73 },
+          series: { cellWidth: 20, halign: "center" },
+          reps: { cellWidth: 35.5 },
+          weights: { cellWidth: 35.5 },
+        },
+      });
+
+      type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
+      const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
+      y = finalY + 6;
+
+      if (
+        y > pageHeight - 20 &&
+        (dayIdx < section.days.length - 1 || sectionIdx < sections.length - 1)
+      ) {
+        doc.addPage();
+        y = 15;
+      }
+    });
+
+    // Add space between sections
+    if (sectionIdx < sections.length - 1) {
+      y += 10;
+    }
+  });
+
+  // Add watermark if avatar URL is provided
+  await addWatermark(doc, avatarUrl);
+
+  doc.save(`Rutina_PushPullLegs_${studentName.replace(/\s+/g, "_")}.pdf`);
+};
+
 export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
+  // Migrate routine data to new format if needed
+  const migratedRoutine = migrateRoutineData(routine);
+
   // Fetch student name if studentId is available
   let studentName = "Estudiante";
-  if (routine.studentId) {
+  if (migratedRoutine.studentId) {
     try {
       const response = await fetch("/api/students");
       const data = await response.json();
       if (response.ok) {
         const student = data.students.find(
-          (s: { id: string }) => s.id === routine.studentId
+          (s: { id: string }) => s.id === migratedRoutine.studentId
         );
         if (student) {
           studentName = student.name;
@@ -244,11 +423,14 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
     }
   }
 
-  // Use compact PDF for full body routines
-  if (routine.isFullBody) {
-    return generateCompactPDF(routine, studentName, avatarUrl);
+  // Use appropriate PDF format based on routine type
+  if (migratedRoutine.type === "fullBody") {
+    return generateCompactPDF(migratedRoutine, studentName, avatarUrl);
+  } else if (migratedRoutine.type === "pushPullLegs") {
+    return generatePushPullLegsPDF(migratedRoutine, studentName, avatarUrl);
   }
 
+  // Default to regular PDF format
   const doc = new jsPDF();
 
   // Title with better styling
@@ -265,7 +447,7 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
   const pageHeight = 297; // A4 page height in mm for jsPDF default
   const pageWidth = 210; // A4 page width in mm for jsPDF default
 
-  routine.days.forEach((day, dayIdx) => {
+  migratedRoutine.days.forEach((day, dayIdx) => {
     // Day header with background
     doc.setFillColor(240, 240, 240); // Light gray background
     doc.rect(7, y - 4, pageWidth - 14, 8, "F");
@@ -356,9 +538,9 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
       doc.addPage();
       y = 15;
     }
-    });
+  });
 
-    // Add watermark if avatar URL is provided
+  // Add watermark if avatar URL is provided
   await addWatermark(doc, avatarUrl);
 
   doc.save(`Rutina_${studentName.replace(/\s+/g, "_")}.pdf`);
