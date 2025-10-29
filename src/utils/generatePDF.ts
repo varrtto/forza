@@ -168,15 +168,15 @@ const generateCompactPDF = async (
   // Title
   doc.setFontSize(18);
   doc.setFont("", "bold");
-  doc.text(`Rutina Full Body - ${studentName}`, 7, 12);
+  doc.text(`Rutina Full Body - ${studentName}`, 4, 12);
   doc.setFont("", "normal");
   doc.setFontSize(9);
-  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 17);
+  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 4, 17);
 
   let y = 25;
   const pageHeight = 297;
   const pageWidth = 210;
-  const margin = 7;
+  const margin = 4; // Reduced from 7mm for more table width
 
   routine.days.forEach((day, dayIdx) => {
     // Day header - more compact
@@ -195,6 +195,7 @@ const generateCompactPDF = async (
       series: string | number;
       reps: string;
       weights: string;
+      details: string;
     }> = [];
 
     day.muscleGroups.forEach((mg) => {
@@ -206,6 +207,7 @@ const generateCompactPDF = async (
           reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
           weights:
             ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
+          details: ex.details || "-",
         });
       });
     });
@@ -220,6 +222,7 @@ const generateCompactPDF = async (
         { header: "Series", dataKey: "series" },
         { header: "Reps", dataKey: "reps" },
         { header: "Peso", dataKey: "weights" },
+        { header: "Detalles", dataKey: "details" },
       ],
       body: allExercises,
       headStyles: {
@@ -238,13 +241,14 @@ const generateCompactPDF = async (
       alternateRowStyles: {
         fillColor: [250, 250, 250],
       },
-      columnStyles: {
-        muscleGroup: { cellWidth: 32 },
-        exercise: { cellWidth: 73 },
-        series: { cellWidth: 20, halign: "center" },
-        reps: { cellWidth: 35.5 },
-        weights: { cellWidth: 35.5 },
-      },
+        columnStyles: {
+          muscleGroup: { cellWidth: 27 },
+          exercise: { cellWidth: 55 },
+          series: { cellWidth: 19, halign: "center" },
+          reps: { cellWidth: 30 },
+          weights: { cellWidth: 30 },
+          details: { cellWidth: 41 },
+        },
     });
 
     type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
@@ -273,15 +277,15 @@ const generatePushPullLegsPDF = async (
   // Title
   doc.setFontSize(18);
   doc.setFont("", "bold");
-  doc.text(`Rutina Empuje/Tirón/Piernas - ${studentName}`, 7, 12);
+  doc.text(`Rutina Empuje/Tirón/Piernas - ${studentName}`, 4, 12);
   doc.setFont("", "normal");
   doc.setFontSize(9);
-  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 17);
+  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 4, 17);
 
   let y = 25;
   const pageHeight = 297;
   const pageWidth = 210;
-  const margin = 7;
+  const margin = 4; // Reduced from 7mm for more table width
 
   // Group days by push/pull/legs based on cycle position
   const pushDays = routine.days.filter((_, index) => index % 3 === 0);
@@ -323,6 +327,7 @@ const generatePushPullLegsPDF = async (
         series: string | number;
         reps: string;
         weights: string;
+        details: string;
       }> = [];
 
       day.muscleGroups.forEach((mg) => {
@@ -334,6 +339,7 @@ const generatePushPullLegsPDF = async (
             reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
             weights:
               ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
+            details: ex.details || "-",
           });
         });
       });
@@ -348,6 +354,7 @@ const generatePushPullLegsPDF = async (
           { header: "Series", dataKey: "series" },
           { header: "Reps", dataKey: "reps" },
           { header: "Peso", dataKey: "weights" },
+          { header: "Detalles", dataKey: "details" },
         ],
         body: allExercises,
         headStyles: {
@@ -367,11 +374,12 @@ const generatePushPullLegsPDF = async (
           fillColor: [250, 250, 250],
         },
         columnStyles: {
-          muscleGroup: { cellWidth: 32 },
-          exercise: { cellWidth: 73 },
-          series: { cellWidth: 20, halign: "center" },
-          reps: { cellWidth: 35.5 },
-          weights: { cellWidth: 35.5 },
+          muscleGroup: { cellWidth: 27 },
+          exercise: { cellWidth: 55 },
+          series: { cellWidth: 19, halign: "center" },
+          reps: { cellWidth: 30 },
+          weights: { cellWidth: 30 },
+          details: { cellWidth: 41 },
         },
       });
 
