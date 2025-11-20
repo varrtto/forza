@@ -187,6 +187,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
   ],
   Abdominales: [
     "Abs sentado en bco rodillas al pecho",
+    "Abs c/ land mine",
     "Abs twis",
     "Abs mariposa",
     "Crunch cruzados",
