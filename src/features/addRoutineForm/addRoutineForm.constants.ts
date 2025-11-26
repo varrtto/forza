@@ -27,6 +27,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Sentadillas c/ TRX",
     "Extensión de rodillas Sillón cuadriceps",
     "Sentadillas c/ barra",
+    "Sentadillas c/ abducción c/ banda",
     "Sentadillas sumo",
     "Sentadillas single",
     "Sentadillas búlgaras",
