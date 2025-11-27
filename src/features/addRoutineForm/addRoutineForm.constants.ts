@@ -81,7 +81,7 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Press cerrado",
     "Pull over bco plano c/ barra",
     "Pull over bco plano c/ mancuernas",
-    "Press bco plano a 45° ( repite en inclinado)",
+    "Press bco plano a 45°",
     "Press bco plano a 1 mano",
     "Flexiones de brazos",
     "Vuelos en piso",
