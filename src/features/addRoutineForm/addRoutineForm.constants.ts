@@ -19,6 +19,7 @@ export const MUSCLE_GROUPS = [
   "Abdominales",
   "PSOAS",
   "Isometricos",
+  "Core",
 ];
 
 export const EXERCISES_BY_MUSCLE_GROUP = {
@@ -205,5 +206,24 @@ export const EXERCISES_BY_MUSCLE_GROUP = {
     "Plancha alta",
     "Plancha invertida",
     "Plancha lateral",
+  ],
+  Core: [
+    "Plancha antiflexion baja",
+    "Plancha antiflexion alta",
+    "Plancha antiflexion invertida",
+    "Plancha antiflexion lateral",
+    "Espinales con nado",
+    "Espinales en bco",
+    "Espinales en bco alto",
+    "Abs sentado en bco rodillas al pecho",
+    "Abs c/ land mine",
+    "Abs twis",
+    "Abs mariposa",
+    "Abs crunch cruzados",
+    "Abs crunch toco talones",
+    "Abs crunch en bco",
+    "Abs crunch altos",
+    "Abs crunch en polea",
+    "Abs colgado",
   ],
 };
