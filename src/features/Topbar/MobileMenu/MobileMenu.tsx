@@ -2,7 +2,7 @@
 
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, Settings, UserPlus, Users } from "lucide-react";
+import { Dumbbell, LogIn, LogOut, Settings, UserPlus, Users } from "lucide-react";
 import { Session } from "next-auth";
 
 interface MobileMenuProps {
@@ -65,6 +65,17 @@ export const MobileMenu = ({
                   <span className="flex items-center gap-3 text-lg">
                     <UserPlus size={48} />
                     Agregar alumno
+                  </span>
+                </ButtonLink>
+                <ButtonLink
+                  href="/add-excercise"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={onClose}
+                >
+                  <span className="flex items-center gap-3 text-lg">
+                    <Dumbbell size={48} />
+                    Agregar Ejercicio
                   </span>
                 </ButtonLink>
 

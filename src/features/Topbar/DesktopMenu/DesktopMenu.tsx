@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Spinner } from "@/components/ui/spinner";
-import { LogOut, Settings, UserPlus, Users } from "lucide-react";
+import { Dumbbell, LogOut, Settings, UserPlus, Users } from "lucide-react";
 import { Session } from "next-auth";
 
 export const DesktopMenu = ({
@@ -31,6 +31,12 @@ export const DesktopMenu = ({
             <span className="flex items-center gap-2">
               Agregar Alumno
               <UserPlus className="h-4 w-4" />
+            </span>
+          </ButtonLink>
+          <ButtonLink href="/add-excercise" variant="link">
+            <span className="flex items-center gap-2">
+              Agregar Ejercicio
+              <Dumbbell className="h-4 w-4" />
             </span>
           </ButtonLink>
 

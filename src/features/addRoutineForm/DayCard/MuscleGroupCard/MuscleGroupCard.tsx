@@ -12,10 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useExercises } from "@/hooks/useExercises";
 import useRoutineStore from "@/state/newRoutine";
 import { Day, MuscleGroup } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
-import { EXERCISES_BY_MUSCLE_GROUP } from "../../addRoutineForm.constants";
+import { useMemo } from "react";
 
 export const MuscleGroupCard = ({
   muscleGroup,
@@ -35,6 +36,14 @@ export const MuscleGroupCard = ({
     updateReps,
     updateDetails,
   } = useRoutineStore();
+
+  const { getExercisesForMuscleGroup } = useExercises();
+  
+  // Get merged exercises (custom + default) for this muscle group
+  const availableExercises = useMemo(
+    () => getExercisesForMuscleGroup(muscleGroup.name),
+    [muscleGroup.name, getExercisesForMuscleGroup]
+  );
   return (
     <Card key={muscleGroup.id} className="border border-border/50">
       <CardHeader className="pb-3">
@@ -112,9 +121,7 @@ export const MuscleGroupCard = ({
                         <SelectValue placeholder="Selecciona un ejercicio" />
                       </SelectTrigger>
                       <SelectContent className="max-w-[calc(100vw-2rem)]">
-                        {EXERCISES_BY_MUSCLE_GROUP[
-                          muscleGroup.name as keyof typeof EXERCISES_BY_MUSCLE_GROUP
-                        ]?.map((exerciseName) => (
+                        {availableExercises.map((exerciseName) => (
                           <SelectItem key={exerciseName} value={exerciseName}>
                             {exerciseName}
                           </SelectItem>
