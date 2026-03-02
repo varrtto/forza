@@ -2,6 +2,27 @@ import { Routine } from "@/types";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
+type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
+
+const A4_PAGE = {
+  height: 297,
+  width: 210,
+};
+
+const DEFAULT_DATE_LABEL = `Generado el: ${new Date().toLocaleDateString()}`;
+
+type BaseExerciseRow = {
+  exercise: string;
+  series: string | number;
+  reps: string;
+  weights: string;
+  details: string;
+};
+
+type DayExerciseRow = BaseExerciseRow & {
+  muscleGroup: string;
+};
+
 // Helper function to migrate old routine format to new format
 const migrateRoutineData = (routine: Routine): Routine => {
   // If routine already has type field, no migration needed
@@ -21,6 +42,106 @@ const migrateRoutineData = (routine: Routine): Routine => {
   delete migratedRoutine.isFullBody;
 
   return migratedRoutine;
+};
+
+const formatSeries = (series?: number) =>
+  series && series > 0 ? series : "-";
+
+const formatList = (values?: Array<string | number>) =>
+  values && values.length > 0 ? values.join(", ") : "-";
+
+const formatText = (value?: string) => value || "-";
+
+const buildRowsFromMuscleGroup = (
+  muscleGroup: Routine["days"][number]["muscleGroups"][number]
+): BaseExerciseRow[] =>
+  muscleGroup.exercises.map((ex) => ({
+    exercise: ex.name || "(Sin nombre)",
+    series: formatSeries(ex.series),
+    reps: formatList(ex.reps),
+    weights: formatList(ex.weight),
+    details: formatText(ex.details),
+  }));
+
+const buildRowsFromDay = (
+  day: Routine["days"][number]
+): DayExerciseRow[] => {
+  const rows: DayExerciseRow[] = [];
+
+  day.muscleGroups.forEach((mg) => {
+    buildRowsFromMuscleGroup(mg).forEach((row) => {
+      rows.push({ muscleGroup: mg.name, ...row });
+    });
+  });
+
+  return rows;
+};
+
+const renderCompactTable = (
+  doc: jsPDF,
+  startY: number,
+  margin: number,
+  rows: DayExerciseRow[],
+  headFillColor: [number, number, number]
+): number => {
+  autoTable(doc, {
+    startY,
+    margin: { left: margin, right: margin },
+    columns: [
+      { header: "Grupo", dataKey: "muscleGroup" },
+      { header: "Ejercicio", dataKey: "exercise" },
+      { header: "Series", dataKey: "series" },
+      { header: "Reps", dataKey: "reps" },
+      { header: "Peso", dataKey: "weights" },
+      { header: "Detalles", dataKey: "details" },
+    ],
+    body: rows,
+    headStyles: {
+      fillColor: headFillColor,
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 10,
+      cellPadding: 0.75,
+    },
+    styles: {
+      fontSize: 10,
+      cellPadding: 0.75,
+      lineColor: [200, 200, 200],
+      lineWidth: 0.1,
+    },
+    alternateRowStyles: {
+      fillColor: [250, 250, 250],
+    },
+    columnStyles: {
+      muscleGroup: { cellWidth: 27 },
+      exercise: { cellWidth: 55 },
+      series: { cellWidth: 19, halign: "center" },
+      reps: { cellWidth: 30 },
+      weights: { cellWidth: 30 },
+      details: { cellWidth: 41 },
+    },
+  });
+
+  const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? startY;
+  return finalY + 6;
+};
+
+const fetchStudentName = async (routine: Routine) => {
+  if (!routine.studentId) return "Estudiante";
+
+  try {
+    const response = await fetch("/api/students");
+    const data = await response.json();
+    if (!response.ok) return "Estudiante";
+
+    const student = data.students.find(
+      (s: { id: string }) => s.id === routine.studentId
+    );
+    return student?.name ?? "Estudiante";
+  } catch (error) {
+    console.error("Error fetching student name:", error);
+    return "Estudiante";
+  }
 };
 
 // Helper function to convert image to grayscale
@@ -75,7 +196,7 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
     ctx.putImageData(grayscaleData, 0, 0);
 
     // Convert canvas back to base64
-    const grayscaleBase64 = canvas.toDataURL("image/jpeg", 0.9);
+    const grayscaleBase64 = canvas.toDataURL("image/jpeg", 0.2);
 
     const imgWidth = img.width;
     const imgHeight = img.height;
@@ -102,17 +223,16 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
     const verticalSpacing = watermarkHeight * 1.5;
     const diagonalOffset = watermarkWidth * 0.75; // Offset for diagonal pattern
 
-    // Save current graphics state
-    doc.saveGraphicsState();
-
-    // Set low opacity for watermark (avoid use of 'any')
-    // @ts-expect-error: GState typing not present in jsPDF types, but safe for supported builds
-    doc.setGState(new doc.GState({ opacity: 0.04 }));
-
     // Add watermark grid to all existing pages
     const totalPages = doc.getNumberOfPages();
     for (let page = 1; page <= totalPages; page++) {
       doc.setPage(page);
+
+      // Save current graphics state for each page (opacity resets on page change)
+      doc.saveGraphicsState();
+      // Set low opacity for watermark (avoid use of 'any')
+      // @ts-expect-error: GState typing not present in jsPDF types, but safe for supported builds
+      doc.setGState(new doc.GState({ opacity: 0.04 }));
 
       // Calculate how many watermarks fit horizontally and vertically
       const cols =
@@ -149,10 +269,10 @@ const addWatermark = async (doc: jsPDF, avatarUrl?: string) => {
           }
         }
       }
-    }
 
-    // Restore graphics state
-    doc.restoreGraphicsState();
+      // Restore graphics state for this page
+      doc.restoreGraphicsState();
+    }
   } catch (error) {
     console.warn("Failed to add watermark:", error);
   }
@@ -171,11 +291,11 @@ const generateCompactPDF = async (
   doc.text(`Rutina Full Body - ${studentName}`, 4, 12);
   doc.setFont("", "normal");
   doc.setFontSize(9);
-  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 4, 17);
+  doc.text(DEFAULT_DATE_LABEL, 4, 17);
 
   let y = 25;
-  const pageHeight = 297;
-  const pageWidth = 210;
+  const pageHeight = A4_PAGE.height;
+  const pageWidth = A4_PAGE.width;
   const margin = 4; // Reduced from 7mm for more table width
 
   routine.days.forEach((day, dayIdx) => {
@@ -188,72 +308,8 @@ const generateCompactPDF = async (
     doc.setFont("", "normal");
     y += 8;
 
-    // Collect all exercises for this day
-    const allExercises: Array<{
-      muscleGroup: string;
-      exercise: string;
-      series: string | number;
-      reps: string;
-      weights: string;
-      details: string;
-    }> = [];
-
-    day.muscleGroups.forEach((mg) => {
-      mg.exercises.forEach((ex) => {
-        allExercises.push({
-          muscleGroup: mg.name,
-          exercise: ex.name || "(Sin nombre)",
-          series: ex.series && ex.series > 0 ? ex.series : "-",
-          reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
-          weights:
-            ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
-          details: ex.details || "-",
-        });
-      });
-    });
-
-    // Render compact table
-    autoTable(doc, {
-      startY: y,
-      margin: { left: margin, right: margin },
-      columns: [
-        { header: "Grupo", dataKey: "muscleGroup" },
-        { header: "Ejercicio", dataKey: "exercise" },
-        { header: "Series", dataKey: "series" },
-        { header: "Reps", dataKey: "reps" },
-        { header: "Peso", dataKey: "weights" },
-        { header: "Detalles", dataKey: "details" },
-      ],
-      body: allExercises,
-      headStyles: {
-        fillColor: [60, 60, 60],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        fontSize: 10,
-        cellPadding: 1.5,
-      },
-      styles: {
-        fontSize: 10,
-        cellPadding: 1.5,
-        lineColor: [200, 200, 200],
-        lineWidth: 0.1,
-      },
-      alternateRowStyles: {
-        fillColor: [250, 250, 250],
-      },
-        columnStyles: {
-          muscleGroup: { cellWidth: 27 },
-          exercise: { cellWidth: 55 },
-          series: { cellWidth: 19, halign: "center" },
-          reps: { cellWidth: 30 },
-          weights: { cellWidth: 30 },
-          details: { cellWidth: 41 },
-        },
-    });
-
-    type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
-    const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
-    y = finalY + 6;
+    const allExercises = buildRowsFromDay(day);
+    y = renderCompactTable(doc, y, margin, allExercises, [60, 60, 60]);
 
     if (y > pageHeight - 20 && dayIdx < routine.days.length - 1) {
       doc.addPage();
@@ -280,11 +336,11 @@ const generatePushPullLegsPDF = async (
   doc.text(`Rutina Empuje/Tirón/Piernas - ${studentName}`, 4, 12);
   doc.setFont("", "normal");
   doc.setFontSize(9);
-  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 4, 17);
+  doc.text(DEFAULT_DATE_LABEL, 4, 17);
 
   let y = 25;
-  const pageHeight = 297;
-  const pageWidth = 210;
+  const pageHeight = A4_PAGE.height;
+  const pageWidth = A4_PAGE.width;
   const margin = 4; // Reduced from 7mm for more table width
 
   // Group days by push/pull/legs based on cycle position
@@ -320,72 +376,8 @@ const generatePushPullLegsPDF = async (
       doc.setFont("", "normal");
       y += 8;
 
-      // Collect all exercises for this day
-      const allExercises: Array<{
-        muscleGroup: string;
-        exercise: string;
-        series: string | number;
-        reps: string;
-        weights: string;
-        details: string;
-      }> = [];
-
-      day.muscleGroups.forEach((mg) => {
-        mg.exercises.forEach((ex) => {
-          allExercises.push({
-            muscleGroup: mg.name,
-            exercise: ex.name || "(Sin nombre)",
-            series: ex.series && ex.series > 0 ? ex.series : "-",
-            reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
-            weights:
-              ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
-            details: ex.details || "-",
-          });
-        });
-      });
-
-      // Render compact table
-      autoTable(doc, {
-        startY: y,
-        margin: { left: margin, right: margin },
-        columns: [
-          { header: "Grupo", dataKey: "muscleGroup" },
-          { header: "Ejercicio", dataKey: "exercise" },
-          { header: "Series", dataKey: "series" },
-          { header: "Reps", dataKey: "reps" },
-          { header: "Peso", dataKey: "weights" },
-          { header: "Detalles", dataKey: "details" },
-        ],
-        body: allExercises,
-        headStyles: {
-          fillColor: [100, 100, 100],
-          textColor: [255, 255, 255],
-          fontStyle: "bold",
-          fontSize: 10,
-          cellPadding: 1.5,
-        },
-        styles: {
-          fontSize: 10,
-          cellPadding: 1.5,
-          lineColor: [200, 200, 200],
-          lineWidth: 0.1,
-        },
-        alternateRowStyles: {
-          fillColor: [250, 250, 250],
-        },
-        columnStyles: {
-          muscleGroup: { cellWidth: 27 },
-          exercise: { cellWidth: 55 },
-          series: { cellWidth: 19, halign: "center" },
-          reps: { cellWidth: 30 },
-          weights: { cellWidth: 30 },
-          details: { cellWidth: 41 },
-        },
-      });
-
-      type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
-      const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
-      y = finalY + 6;
+      const allExercises = buildRowsFromDay(day);
+      y = renderCompactTable(doc, y, margin, allExercises, [100, 100, 100]);
 
       if (
         y > pageHeight - 20 &&
@@ -413,23 +405,7 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
   const migratedRoutine = migrateRoutineData(routine);
 
   // Fetch student name if studentId is available
-  let studentName = "Estudiante";
-  if (migratedRoutine.studentId) {
-    try {
-      const response = await fetch("/api/students");
-      const data = await response.json();
-      if (response.ok) {
-        const student = data.students.find(
-          (s: { id: string }) => s.id === migratedRoutine.studentId
-        );
-        if (student) {
-          studentName = student.name;
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching student name:", error);
-    }
-  }
+  const studentName = await fetchStudentName(migratedRoutine);
 
   // Use appropriate PDF format based on routine type
   if (migratedRoutine.type === "fullBody") {
@@ -452,8 +428,8 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
   doc.text(`Generado el: ${new Date().toLocaleDateString()}`, 7, 20);
 
   let y = 35; // Start after header
-  const pageHeight = 297; // A4 page height in mm for jsPDF default
-  const pageWidth = 210; // A4 page width in mm for jsPDF default
+  const pageHeight = A4_PAGE.height; // A4 page height in mm for jsPDF default
+  const pageWidth = A4_PAGE.width; // A4 page width in mm for jsPDF default
 
   migratedRoutine.days.forEach((day, dayIdx) => {
     // Day header with background
@@ -490,13 +466,7 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
       const detailsColWidth = remainingForText - exerciseColWidth;
 
       // Build rows
-      const rows = mg.exercises.map((ex) => ({
-        exercise: ex.name || "(Sin nombre)",
-        series: ex.series && ex.series > 0 ? ex.series : "-",
-        reps: ex.reps && ex.reps.length > 0 ? ex.reps.join(", ") : "-",
-        weights: ex.weight && ex.weight.length > 0 ? ex.weight.join(", ") : "-",
-        details: ex.details || "-",
-      }));
+      const rows = buildRowsFromMuscleGroup(mg);
 
       // Render table with AutoTable
       autoTable(doc, {
@@ -518,7 +488,7 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
         },
         styles: {
           fontSize: 12,
-          cellPadding: 2,
+      cellPadding: 1,
           lineColor: [200, 200, 200],
           lineWidth: 0.1,
         },
@@ -535,13 +505,12 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
       });
 
       // jsPDF-AutoTable augments the doc instance with lastAutoTable
-      type DocWithAutoTable = jsPDF & { lastAutoTable?: { finalY: number } };
       const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
       y = finalY + 4; // space after table
     });
 
     // Add space between days
-    y += 15;
+    y += 7.5;
     if (y > pageHeight - 10) {
       doc.addPage();
       y = 15;
