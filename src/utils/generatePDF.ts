@@ -52,6 +52,25 @@ const formatList = (values?: Array<string | number>) =>
 
 const formatText = (value?: string) => value || "-";
 
+// Larger than the previous 12pt / 10pt. Vertical padding shrinks so a
+// single-line cell keeps the same height. Horizontal padding shrinks only
+// enough that names which already fit on one line still fit.
+const REGULAR_TABLE_FONT_SIZE = 12.5;
+const REGULAR_TABLE_CELL_PADDING = {
+  top: 0.9,
+  right: 0.55,
+  bottom: 0.9,
+  left: 0.55,
+};
+
+const COMPACT_TABLE_FONT_SIZE = 11;
+const COMPACT_TABLE_CELL_PADDING = {
+  top: 0.55,
+  right: 0.4,
+  bottom: 0.55,
+  left: 0.4,
+};
+
 const buildRowsFromMuscleGroup = (
   muscleGroup: Routine["days"][number]["muscleGroups"][number]
 ): BaseExerciseRow[] =>
@@ -100,12 +119,10 @@ const renderCompactTable = (
       fillColor: headFillColor,
       textColor: [255, 255, 255],
       fontStyle: "bold",
-      fontSize: 10,
-      cellPadding: 0.75,
     },
     styles: {
-      fontSize: 10,
-      cellPadding: 0.75,
+      fontSize: COMPACT_TABLE_FONT_SIZE,
+      cellPadding: COMPACT_TABLE_CELL_PADDING,
       lineColor: [200, 200, 200],
       lineWidth: 0.1,
     },
@@ -444,12 +461,18 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
     y += 10;
 
     day.muscleGroups.forEach((mg) => {
-      // Muscle group header
+      const groupBarHeight = 7;
+      const groupBarTop = y - 3.5;
+      doc.setFillColor(60, 60, 60);
+      doc.rect(7, groupBarTop, 2.2, groupBarHeight, "F");
+      doc.setFillColor(232, 232, 232);
+      doc.rect(9.2, groupBarTop, pageWidth - 16.2, groupBarHeight, "F");
+
       doc.setFontSize(12);
       doc.setFont("", "bold");
-      doc.text(`Grupo Muscular: ${mg.name}`, 9, y);
+      doc.text(`Grupo Muscular: ${mg.name}`, 13, y + 1.5);
       doc.setFont("", "normal");
-      y += 6;
+      y = groupBarTop + groupBarHeight;
 
       // Table width inside page margins
       const tableWidth = pageWidth - 14; // 7mm margins
@@ -487,8 +510,8 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
           halign: "left",
         },
         styles: {
-          fontSize: 12,
-      cellPadding: 1,
+          fontSize: REGULAR_TABLE_FONT_SIZE,
+          cellPadding: REGULAR_TABLE_CELL_PADDING,
           lineColor: [200, 200, 200],
           lineWidth: 0.1,
         },
@@ -506,7 +529,7 @@ export const generatePDF = async (routine: Routine, avatarUrl?: string) => {
 
       // jsPDF-AutoTable augments the doc instance with lastAutoTable
       const finalY = (doc as DocWithAutoTable).lastAutoTable?.finalY ?? y;
-      y = finalY + 4; // space after table
+      y = finalY + 8;
     });
 
     // Add space between days
