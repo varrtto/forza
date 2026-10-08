@@ -3,7 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useRoutineStore from "@/state/newRoutine";
 import { Day } from "@/types";
 import { Calendar, Plus, Trash2 } from "lucide-react";
-import { MUSCLE_GROUPS } from "../addRoutineForm.constants";
+import {
+  MUSCLE_GROUPS,
+  PPL_ALWAYS_MUSCLE_GROUPS,
+  PPL_DAY_MUSCLE_GROUPS,
+} from "../addRoutineForm.constants";
 import { MuscleGroupCard } from "./MuscleGroupCard";
 
 export const DayCard = ({ day }: { day: Day }) => {
@@ -16,23 +20,14 @@ export const DayCard = ({ day }: { day: Day }) => {
     let allowedMuscleGroups = MUSCLE_GROUPS;
 
     // Filter muscle groups based on routine type
-    if (routine.type === 'pushPullLegs') {
+    if (routine.type === "pushPullLegs") {
       const dayIndex = routine.days.findIndex((d) => d.id === dayId);
-      const cyclePosition = dayIndex % 3; // 0: Push, 1: Pull, 2: Legs
+      const cyclePosition = dayIndex % 3;
 
-      if (cyclePosition === 0) {
-        // Push days
-        allowedMuscleGroups = ['Pecho', 'Hombros', 'Triceps'];
-      } else if (cyclePosition === 1) {
-        // Pull days
-        allowedMuscleGroups = ['Espalda', 'Biceps'];
-      } else if (cyclePosition === 2) {
-        // Legs days
-        allowedMuscleGroups = ['Piernas', 'Glúteos', 'Femorales', 'Gemelos'];
-      }
-
-      // Always include Abdominales, PSOAS, and Isometricos for all days
-      allowedMuscleGroups = [...allowedMuscleGroups, 'Abdominales', 'PSOAS', 'Isometricos'];
+      allowedMuscleGroups = [
+        ...PPL_DAY_MUSCLE_GROUPS[cyclePosition],
+        ...PPL_ALWAYS_MUSCLE_GROUPS,
+      ];
     }
 
     return allowedMuscleGroups.filter(
