@@ -1,8 +1,6 @@
 "use client";
 
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isPasswordValid } from "@/utils/passwordStrength";
@@ -10,6 +8,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useReducer } from "react";
 import { initialState, signUpReducer } from "./signUpReducer";
+
+const fieldClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none focus-visible:border-tape focus-visible:ring-0";
+const labelClass = "font-display text-base text-ink";
 
 export default function SignUp() {
   const [state, dispatch] = useReducer(signUpReducer, initialState);
@@ -66,97 +68,104 @@ export default function SignUp() {
   };
 
   return (
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Crear Cuenta</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nombre</Label>
-              <Input
-                id="name"
-                type="text"
-                value={state.name}
-                onChange={(e) =>
-                  dispatch({ type: "SET_NAME", payload: e.target.value })
-                }
-                required
-                disabled={state.isLoading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={state.email}
-                onChange={(e) =>
-                  dispatch({ type: "SET_EMAIL", payload: e.target.value })
-                }
-                required
-                disabled={state.isLoading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                value={state.password}
-                onChange={(e) =>
-                  dispatch({ type: "SET_PASSWORD", payload: e.target.value })
-                }
-                required
-                disabled={state.isLoading}
-              />
-              <PasswordStrengthIndicator password={state.password} />
-            </div>
-            <div>
-              <Label htmlFor="confirmPassword">Confirmar Contraseña</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={state.confirmPassword}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_CONFIRM_PASSWORD",
-                    payload: e.target.value,
-                  })
-                }
-                required
-                disabled={state.isLoading}
-              />
-            </div>
-            {state.error && (
-              <div className="text-red-500 text-sm text-center">
-                {state.error}
-              </div>
-            )}
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={
-                state.isLoading || 
-                !isPasswordValid(state.password) ||
-                state.password !== state.confirmPassword
-              }
-            >
-              {state.isLoading ? "Creando cuenta..." : "Crear Cuenta"}
-            </Button>
-          </form>
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600">
-              ¿Ya tienes cuenta?{" "}
-              <Link
-                href="/auth/signin"
-                className="text-blue-600 hover:underline"
-              >
-                Inicia sesión aquí
-              </Link>
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+    <div>
+      <h1 className="font-display text-5xl tracking-tight md:text-7xl">
+        Crear cuenta
+      </h1>
+      <p className="mt-3 max-w-md text-lg text-ink/70">
+        Nombre, email y una contraseña. Después cargás al primer alumno.
+      </p>
+      <form onSubmit={handleSubmit} className="mt-10 flex flex-col gap-6">
+        <div>
+          <Label htmlFor="name" className={labelClass}>
+            Nombre
+          </Label>
+          <Input
+            id="name"
+            type="text"
+            value={state.name}
+            onChange={(e) =>
+              dispatch({ type: "SET_NAME", payload: e.target.value })
+            }
+            required
+            disabled={state.isLoading}
+            className={`mt-2 ${fieldClass}`}
+          />
+        </div>
+        <div>
+          <Label htmlFor="email" className={labelClass}>
+            Email
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            value={state.email}
+            onChange={(e) =>
+              dispatch({ type: "SET_EMAIL", payload: e.target.value })
+            }
+            required
+            disabled={state.isLoading}
+            className={`mt-2 ${fieldClass}`}
+          />
+        </div>
+        <div>
+          <Label htmlFor="password" className={labelClass}>
+            Contraseña
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            value={state.password}
+            onChange={(e) =>
+              dispatch({ type: "SET_PASSWORD", payload: e.target.value })
+            }
+            required
+            disabled={state.isLoading}
+            className={`mt-2 ${fieldClass}`}
+          />
+          <PasswordStrengthIndicator password={state.password} />
+        </div>
+        <div>
+          <Label htmlFor="confirmPassword" className={labelClass}>
+            Confirmar contraseña
+          </Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            value={state.confirmPassword}
+            onChange={(e) =>
+              dispatch({
+                type: "SET_CONFIRM_PASSWORD",
+                payload: e.target.value,
+              })
+            }
+            required
+            disabled={state.isLoading}
+            className={`mt-2 ${fieldClass}`}
+          />
+        </div>
+        {state.error && <p className="text-sm text-destructive">{state.error}</p>}
+        <button
+          type="submit"
+          disabled={
+            state.isLoading ||
+            !isPasswordValid(state.password) ||
+            state.password !== state.confirmPassword
+          }
+          className="mt-2 inline-flex h-12 cursor-pointer items-center justify-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape disabled:opacity-50"
+        >
+          {state.isLoading ? "Creando cuenta..." : "Crear cuenta"}
+        </button>
+      </form>
+      <p className="mt-8 text-ink/70">
+        ¿Ya tenés cuenta?{" "}
+        <Link
+          href="/auth/signin"
+          className="font-display text-ink underline decoration-tape decoration-2 underline-offset-4"
+        >
+          Iniciar sesión
+        </Link>
+      </p>
+    </div>
   );
 }

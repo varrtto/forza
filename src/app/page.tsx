@@ -11,7 +11,7 @@ export default async function LandingPage() {
   const isAuthenticated = !!session;
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="gym-floor flex min-h-[calc(100vh-72px)] flex-col">
       <HeroSection isAuthenticated={isAuthenticated} />
       <FeaturesSection />
       <HowItWorksSection />

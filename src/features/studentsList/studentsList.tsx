@@ -1,8 +1,8 @@
 import { authOptions } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 import { Student } from "@/types";
-import { User } from "lucide-react";
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { StudentsListClient } from "./StudentsListClient";
 
 async function getStudents(): Promise<Student[]> {
@@ -36,9 +36,12 @@ export const StudentsList = async () => {
 
   if (!session) {
     return (
-      <div className="text-center p-8">
-        <p className="text-muted-foreground">
-          Debes iniciar sesión para ver los estudiantes
+      <div className="py-16">
+        <h1 className="font-display text-5xl tracking-tight md:text-6xl">
+          Alumnos
+        </h1>
+        <p className="mt-4 max-w-md text-lg text-ink/70">
+          Inicia sesión para ver tus alumnos y armar rutinas.
         </p>
       </div>
     );
@@ -48,15 +51,27 @@ export const StudentsList = async () => {
 
   if (students.length === 0) {
     return (
-      <div className="text-center p-8">
-        <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No hay estudiantes</h3>
-        <p className="text-muted-foreground mb-4">
-          Agrega tu primer estudiante para comenzar
+      <div className="py-8 md:py-12">
+        <h1 className="font-display text-5xl tracking-tight md:text-7xl">
+          Alumnos
+        </h1>
+        <p className="mt-5 max-w-md text-lg text-ink/70">
+          Todavía no hay nadie en el piso. Agrega el primero para empezar a
+          armar rutinas.
         </p>
+        <Link
+          href="/add-student"
+          className="mt-8 inline-flex h-12 items-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape"
+        >
+          Agregar alumno
+        </Link>
       </div>
     );
   }
 
-  return <StudentsListClient initialStudents={students} />;
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <StudentsListClient initialStudents={students} />
+    </div>
+  );
 };

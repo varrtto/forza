@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 interface CTASectionProps {
@@ -14,29 +13,26 @@ export function CTASection({ isAuthenticated }: CTASectionProps) {
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
-      router.push("/auth/signin");
+      router.push("/auth/signup");
     }
   };
 
   return (
-    <section className="px-4 py-20 bg-primary text-primary-foreground">
-      <div className="container mx-auto max-w-4xl text-center space-y-6">
-        <h2 className="text-3xl md:text-4xl font-bold">
-          ¿Listo para simplificar tu trabajo?
+    <section className="gym-rail px-4 py-16 md:px-8 md:py-24">
+      <div className="mx-auto w-full max-w-5xl">
+        <h2 className="max-w-xl font-display text-4xl tracking-tight md:text-6xl">
+          Empezá con tu primer alumno.
         </h2>
-        <p className="text-xl opacity-90">
-          Únete a los entrenadores que ya están ahorrando tiempo con Forza
+        <p className="mt-4 max-w-md text-lg text-current/70">
+          Creá la cuenta, cargá la ficha y armá la semana.
         </p>
-        <div className="pt-4">
-          <Button 
-            size="lg" 
-            variant="secondary" 
-            onClick={handleGetStarted}
-            className="text-lg px-8"
-          >
-            {isAuthenticated ? "Ir al Dashboard" : "Comenzar Gratis"}
-          </Button>
-        </div>
+        <button
+          type="button"
+          onClick={handleGetStarted}
+          className="mt-10 inline-flex h-12 cursor-pointer items-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape"
+        >
+          {isAuthenticated ? "Ir a alumnos" : "Crear cuenta"}
+        </button>
       </div>
     </section>
   );

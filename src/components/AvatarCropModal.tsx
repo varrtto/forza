@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import React, { useMemo, useRef, useState } from "react";
-import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
+import ReactCrop, {
+  centerCrop,
+  makeAspectCrop,
+  type Crop,
+  type PixelCrop,
+} from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
 interface AvatarCropModalProps {
@@ -140,33 +144,38 @@ export function AvatarCropModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent
+        showCloseButton={false}
+        className="rounded-none border-0 bg-floor p-8 text-ink shadow-none sm:max-w-2xl"
+      >
         <DialogHeader>
-          <DialogTitle>Recortar Imagen de Perfil</DialogTitle>
-          <DialogDescription>
-            Selecciona la parte de la imagen que quieres usar como avatar. Puedes arrastrar y ajustar el área de recorte.
+          <DialogTitle className="font-display text-3xl font-normal tracking-tight text-ink">
+            Recortar foto
+          </DialogTitle>
+          <DialogDescription className="text-ink/70">
+            Arrastrá el recuadro para elegir el recorte del avatar.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4">
           {imageUrl && (
-            <div className="max-w-full max-h-96 overflow-hidden border rounded-lg">
+            <div className="max-h-96 max-w-full overflow-hidden border border-ink/15">
               <ReactCrop
                 crop={crop}
                 onChange={(c) => setCrop(c)}
                 onComplete={(c) => setCompletedCrop(c)}
                 aspect={ASPECT_RATIO}
-                className="max-w-full max-h-96"
+                className="max-h-96 max-w-full"
               >
                 <Image
                   width={200}
                   height={200}
                   src={imageUrl}
                   alt="Imagen a recortar"
-                  className="max-w-full max-h-96 object-contain"
+                  className="max-h-96 max-w-full object-contain"
                   ref={imgRef}
                   onLoad={onImageLoad}
-                  style={{ display: 'block' }}
+                  style={{ display: "block" }}
                 />
               </ReactCrop>
             </div>
@@ -175,16 +184,23 @@ export function AvatarCropModal({
           <canvas ref={canvasRef} className="hidden" />
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isUploading}>
+        <DialogFooter className="mt-4 gap-3 sm:justify-start">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isUploading}
+            className="cursor-pointer px-1 font-display text-base text-ink/60 hover:text-ink disabled:opacity-50"
+          >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
+            type="button"
             onClick={handleCrop}
             disabled={!completedCrop || isUploading}
+            className="cursor-pointer bg-tape px-4 py-2 font-display text-base text-on-tape disabled:opacity-50"
           >
-            {isUploading ? "Procesando..." : "Aplicar Recorte"}
-          </Button>
+            {isUploading ? "Procesando..." : "Aplicar recorte"}
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

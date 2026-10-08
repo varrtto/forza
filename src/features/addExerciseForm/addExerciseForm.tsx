@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
   FormControl,
@@ -11,17 +10,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { MUSCLE_GROUPS } from "@/features/addRoutineForm/addRoutineForm.constants";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Trash2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -31,14 +23,11 @@ const formSchema = z.object({
   exerciseName: z.string().min(1, "El nombre del ejercicio es requerido"),
 });
 
-interface UserExercise {
-  id: string;
-  user_id: string;
-  muscle_group: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
+const fieldClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none focus-visible:border-tape focus-visible:ring-0";
+const labelClass = "font-display text-base text-ink";
+const comboClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:border-tape";
 
 export const AddExerciseForm = () => {
   const [actionError, setActionError] = useState<string | null>(null);
@@ -51,26 +40,6 @@ export const AddExerciseForm = () => {
       muscleGroup: "",
       exerciseName: "",
     },
-  });
-
-  const fetchExercises = async (): Promise<UserExercise[]> => {
-    const response = await fetch("/api/exercises");
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Error al cargar ejercicios");
-    }
-
-    return data.exercises || [];
-  };
-
-  const {
-    data: exercises = [],
-    isLoading,
-    error: queryError,
-  } = useQuery({
-    queryKey: ["exercises"],
-    queryFn: fetchExercises,
   });
 
   const addExerciseMutation = useMutation({
@@ -95,27 +64,8 @@ export const AddExerciseForm = () => {
       return data;
     },
     onSuccess: async () => {
-      setSuccess("Ejercicio agregado exitosamente");
+      setSuccess("Ejercicio agregado");
       form.reset();
-      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
-    },
-    onError: (err) => {
-      setActionError(err instanceof Error ? err.message : "Error de conexión");
-    },
-  });
-
-  const deleteExerciseMutation = useMutation({
-    mutationFn: async (exerciseId: string) => {
-      const response = await fetch(`/api/exercises/${exerciseId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Error al eliminar ejercicio");
-      }
-    },
-    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["exercises"] });
     },
     onError: (err) => {
@@ -129,152 +79,75 @@ export const AddExerciseForm = () => {
     addExerciseMutation.mutate(values);
   };
 
-  const handleDelete = (exerciseId: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este ejercicio?")) {
-      return;
-    }
-
-    setActionError(null);
-    setSuccess(null);
-    deleteExerciseMutation.mutate(exerciseId);
-  };
-
-  const errorMessage =
-    actionError ?? (queryError instanceof Error ? queryError.message : null);
-
-  const exercisesByMuscleGroup = exercises.reduce((acc, exercise) => {
-    if (!acc[exercise.muscle_group]) {
-      acc[exercise.muscle_group] = [];
-    }
-    acc[exercise.muscle_group].push(exercise);
-    return acc;
-  }, {} as Record<string, UserExercise[]>);
-
   return (
-    <>
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>Agregar Ejercicio</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col gap-4"
-            >
-              {errorMessage && (
-                <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
-                  {errorMessage}
-                </div>
-              )}
-              {success && (
-                <div className="p-3 bg-green-500/10 text-green-600 rounded-md text-sm">
-                  {success}
-                </div>
-              )}
-              <FormField
-                control={form.control}
-                name="muscleGroup"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grupo Muscular</FormLabel>
-                    <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecciona un grupo muscular" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {MUSCLE_GROUPS.map((group) => (
-                            <SelectItem key={group} value={group}>
-                              {group}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="exerciseName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre del Ejercicio</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Ej: Press banca inclinado" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={addExerciseMutation.isPending}
-              >
-                {addExerciseMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Agregando...
-                  </>
-                ) : (
-                  "Agregar Ejercicio"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle>Ejercicios Agregados</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-          ) : exercises.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No has agregado ejercicios personalizados aún
-            </p>
-          ) : (
-            <div className="space-y-6">
-              {Object.entries(exercisesByMuscleGroup).map(
-                ([muscleGroup, groupExercises]) => (
-                  <div key={muscleGroup}>
-                    <h3 className="font-semibold text-lg mb-3">
-                      {muscleGroup}
-                    </h3>
-                    <div className="space-y-2">
-                      {groupExercises.map((exercise) => (
-                        <div
-                          key={exercise.id}
-                          className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                        >
-                          <span className="flex-1">{exercise.name}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(exercise.id)}
-                            className="text-destructive hover:text-destructive"
-                            disabled={deleteExerciseMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="flex flex-col gap-6"
+      >
+        <FormField
+          control={form.control}
+          name="muscleGroup"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelClass}>Grupo muscular</FormLabel>
+              <FormControl>
+                <Combobox
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className={comboClass}
+                  placeholder="Elegir grupo"
+                  searchPlaceholder="Buscar grupo"
+                  emptyText="No hay grupos"
+                  options={MUSCLE_GROUPS.map((group) => ({
+                    value: group,
+                    label: group,
+                  }))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </CardContent>
-      </Card>
-    </>
+        />
+        <FormField
+          control={form.control}
+          name="exerciseName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={labelClass}>Nombre</FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  className={fieldClass}
+                  placeholder="Press banca inclinado"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {actionError && (
+          <p className="text-sm text-destructive">{actionError}</p>
+        )}
+        {success && (
+          <p className="text-sm text-ink">
+            {success}.{" "}
+            <Link
+              href="/exercises"
+              className="font-display underline decoration-tape decoration-2 underline-offset-4"
+            >
+              Ver lista
+            </Link>
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={addExerciseMutation.isPending}
+          className="mt-2 inline-flex h-12 cursor-pointer items-center justify-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape disabled:opacity-50"
+        >
+          {addExerciseMutation.isPending ? "Agregando..." : "Agregar ejercicio"}
+        </button>
+      </form>
+    </Form>
   );
 };

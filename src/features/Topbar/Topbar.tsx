@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
@@ -28,29 +28,37 @@ export const Topbar = () => {
 
   return (
     <>
-      {/* Main Topbar */}
-      <div className="flex sticky top-0 justify-between items-center bg-background border-b border-border p-2 z-50 h-[72px]">
-        <TopLeft session={session} closeMobileMenu={closeMobileMenu} />
+      <header className="gym-bar sticky top-0 z-50 h-[72px]">
+        <div className="flex h-[69px] items-center justify-between gap-4 px-3 md:px-6">
+          <TopLeft session={session} closeMobileMenu={closeMobileMenu} />
 
-        {/* Desktop Navigation */}
-        <DesktopMenu session={session} status={status} handleSignOut={handleSignOut} />
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <DesktopMenu
+              session={session}
+              status={status}
+              handleSignOut={handleSignOut}
+            />
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleMobileMenu}
-            className="p-2"
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </Button>
+            <div className="ml-4 border-l border-current/25 pl-4 md:hidden">
+              <button
+                type="button"
+                onClick={toggleMobileMenu}
+                aria-label={isMobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                aria-expanded={isMobileMenuOpen}
+                className="flex h-10 w-10 cursor-pointer items-center justify-center text-current"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+        <div className="h-[3px] bg-tape" />
+      </header>
       <ConfirmSignOutModal
         isOpen={isConfirmingSignOutOpen}
         onClose={() => setIsConfirmingSignOutOpen(false)}

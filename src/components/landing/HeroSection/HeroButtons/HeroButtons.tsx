@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -18,24 +17,23 @@ export function HeroButtons({ isAuthenticated }: HeroButtonsProps) {
       router.push("/auth/signin");
     }
   };
+
   return (
-    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-      <Button
-        size="lg"
+    <div className="mt-10 flex flex-wrap items-center gap-5">
+      <button
+        type="button"
         onClick={handleGetStarted}
-        className="text-lg px-8 bg-white text-black hover:bg-gray-100"
+        className="inline-flex h-12 cursor-pointer items-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape"
       >
-        {isAuthenticated ? "Ir al Dashboard" : "Comenzar Ahora"}
-      </Button>
+        {isAuthenticated ? "Ir a alumnos" : "Empezar"}
+      </button>
       {!isAuthenticated && (
-        <Button
-          size="lg"
-          variant="outline"
-          asChild
-          className="text-lg px-8 border-2 border-white bg-transparent !text-white hover:bg-white hover:!text-black transition-colors"
+        <Link
+          href="/auth/signup"
+          className="font-display text-lg text-floor underline decoration-tape decoration-2 underline-offset-4"
         >
-          <Link href="/auth/signup">Crear Cuenta</Link>
-        </Button>
+          Crear cuenta
+        </Link>
       )}
     </div>
   );
