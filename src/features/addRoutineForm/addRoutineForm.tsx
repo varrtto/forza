@@ -22,32 +22,31 @@ export const AddRoutineForm = ({
 }: AddRoutineFormProps) => {
   const { routine, resetRoutine, loadRoutine } = useRoutineStore();
 
-  // Initialize routine state when component mounts
   useEffect(() => {
     if (existingRoutine) {
-      // Load existing routine for editing
       loadRoutine(existingRoutine);
     } else {
-      // Reset for creating new routine
       resetRoutine();
     }
   }, [existingRoutine, resetRoutine, loadRoutine]);
 
   return (
-    <div className="space-y-6 max-w-xl py-4">
-      {/* Add Day Section */}
+    <div className="flex flex-col gap-12">
       <CreateRoutineCard
         preSelectedStudentId={preSelectedStudentId}
         isEditMode={!!existingRoutine}
       />
 
-      {/* Days List */}
-      <div className="space-y-6">
-        {routine.days?.map((day) => (
-          <DayCard key={day.id} day={day} />
-        ))}
-      </div>
-      {/* Save Button */}
+      {routine.days?.length === 0 ? (
+        <EmptyRoutineCard />
+      ) : (
+        <div className="flex flex-col gap-12">
+          {routine.days?.map((day) => (
+            <DayCard key={day.id} day={day} />
+          ))}
+        </div>
+      )}
+
       {routine.days?.length > 0 && (
         <SaveButton
           routine={routine}
@@ -55,9 +54,6 @@ export const AddRoutineForm = ({
           routineId={routineId}
         />
       )}
-
-      {/* Empty Routine Card */}
-      {routine.days?.length === 0 && <EmptyRoutineCard />}
     </div>
   );
 };

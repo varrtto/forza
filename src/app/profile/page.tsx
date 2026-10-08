@@ -1,7 +1,6 @@
 "use client";
 
 import { AvatarCropModal } from "@/components/AvatarCropModal";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -28,6 +27,10 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+const fieldClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none focus-visible:border-tape focus-visible:ring-0";
+const labelClass = "font-display text-base text-ink";
+
 export default function ProfilePage() {
   const { status, update: updateSession } = useSession();
   const router = useRouter();
@@ -50,7 +53,6 @@ export default function ProfilePage() {
     },
   });
 
-  // Fetch user profile on mount
   useEffect(() => {
     const fetchProfile = async () => {
       if (status === "authenticated") {
@@ -84,7 +86,6 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const validTypes = [
       "image/jpeg",
       "image/jpg",
@@ -99,7 +100,6 @@ export default function ProfilePage() {
       return;
     }
 
-    // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setError("Archivo muy grande. El tamaño máximo es 5MB");
@@ -109,7 +109,6 @@ export default function ProfilePage() {
     setSelectedFile(file);
     setShowCropModal(true);
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -134,8 +133,7 @@ export default function ProfilePage() {
 
       if (response.ok) {
         setAvatarUrl(result.avatar_url);
-        setSuccess("Avatar actualizado exitosamente");
-        // Update session to reflect new avatar
+        setSuccess("Logo actualizado");
         await updateSession();
         setTimeout(() => setSuccess(""), 3000);
       } else {
@@ -163,8 +161,7 @@ export default function ProfilePage() {
 
       if (response.ok) {
         setAvatarUrl("");
-        setSuccess("Avatar eliminado exitosamente");
-        // Update session to reflect avatar removal
+        setSuccess("Logo eliminado");
         await updateSession();
         setTimeout(() => setSuccess(""), 3000);
       } else {
@@ -194,8 +191,7 @@ export default function ProfilePage() {
       const result = await response.json();
 
       if (response.ok) {
-        setSuccess("Perfil actualizado exitosamente");
-        // Update session to reflect new profile data
+        setSuccess("Perfil actualizado");
         await updateSession();
         setTimeout(() => {
           setSuccess("");
@@ -210,55 +206,54 @@ export default function ProfilePage() {
     }
   };
 
-  // Show loading state if session is loading
   if (status === "loading" || isFetchingProfile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-muted-foreground">Cargando...</div>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-ink/70">Cargando...</p>
+        </div>
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
   if (status === "unauthenticated") {
     router.push("/auth/signin");
     return null;
   }
 
   return (
-    <div className="flex flex-col items-center pt-10 px-4">
-      <div className="w-full max-w-2xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Mi Perfil</h1>
-          <p className="text-muted-foreground">
-            Configura tu información personal y de tu gimnasio
-          </p>
-        </div>
+    <div className="gym-floor min-h-[calc(100vh-72px)]">
+      <div className="mx-auto w-full max-w-xl px-4 py-10 md:px-8 md:py-14">
+        <h1 className="font-display text-5xl tracking-tight md:text-7xl">
+          Perfil
+        </h1>
+        <p className="mt-3 max-w-md text-lg text-ink/70">
+          Tu nombre, el del gimnasio y el logo que sale en las rutinas.
+        </p>
 
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="flex flex-col gap-6"
-            >
-              {/* Avatar Upload Section */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative w-32 h-32 rounded-full overflow-hidden bg-muted flex items-center justify-center border-2 border-border">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-10 flex flex-col gap-6"
+          >
+            <div>
+              <p className="font-display text-base text-ink">Logo</p>
+              <div className="mt-3 flex items-center gap-5">
+                <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden bg-ink">
                   {avatarUrl ? (
                     <Image
                       src={avatarUrl}
-                      alt="Avatar"
+                      alt="Logo del gimnasio"
                       fill
                       className="object-cover"
-                      sizes="100px"
+                      sizes="96px"
                       priority
                     />
                   ) : (
-                    <User className="w-16 h-16 text-muted-foreground" />
+                    <User className="h-10 w-10 text-floor" />
                   )}
                 </div>
-
-                <div className="flex gap-2">
+                <div className="min-w-0">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -266,91 +261,92 @@ export default function ProfilePage() {
                     onChange={handleAvatarUpload}
                     className="hidden"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isUploadingAvatar}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {isUploadingAvatar ? "Subiendo..." : "Subir Imagen"}
-                  </Button>
-
-                  {avatarUrl && (
-                    <Button
+                  <div className="flex flex-wrap gap-3">
+                    <button
                       type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAvatarDelete}
-                      disabled={isDeletingAvatar}
-                      className="text-destructive hover:text-destructive"
+                      disabled={isUploadingAvatar}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex h-10 items-center gap-2 font-display text-base text-ink underline decoration-tape decoration-2 underline-offset-4 disabled:opacity-50"
                     >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                      <Upload className="h-4 w-4" />
+                      {isUploadingAvatar ? "Subiendo..." : "Subir imagen"}
+                    </button>
+                    {avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={handleAvatarDelete}
+                        disabled={isDeletingAvatar}
+                        aria-label="Eliminar logo"
+                        className="inline-flex h-10 items-center text-ink/40 transition-colors hover:text-destructive disabled:opacity-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm text-ink/55">
+                    JPEG, PNG, GIF o WebP. Máximo 5MB.
+                  </p>
                 </div>
-
-                <p className="text-xs text-muted-foreground text-center">
-                  JPEG, PNG, GIF o WebP. Máximo 5MB.
-                </p>
               </div>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre Completo</FormLabel>
-                    <FormControl>
-                      <Input type="text" placeholder="Tu nombre" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="gym_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre del Gimnasio</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        placeholder="Nombre de tu gimnasio (opcional)"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Este nombre aparecerá en los documentos generados
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {error && (
-                <div className="text-red-500 text-sm text-center bg-red-50 dark:bg-red-950/20 p-3 rounded-md border border-red-200 dark:border-red-900">
-                  {error}
-                </div>
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={labelClass}>Nombre</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Tu nombre"
+                      className={fieldClass}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-              {success && (
-                <div className="text-green-600 text-sm text-center bg-green-50 dark:bg-green-950/20 p-3 rounded-md border border-green-200 dark:border-green-900">
-                  {success}
-                </div>
-              )}
+            />
 
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? "Guardando..." : "Guardar Cambios"}
-              </Button>
-            </form>
-          </Form>
-        </div>
+            <FormField
+              control={form.control}
+              name="gym_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={labelClass}>
+                    Nombre del gimnasio
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      placeholder="Opcional"
+                      className={fieldClass}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-ink/55">
+                    Sale en las rutinas que generás.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            {success && <p className="text-sm text-ink">{success}</p>}
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="mt-2 inline-flex h-12 items-center justify-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape disabled:opacity-50"
+            >
+              {isLoading ? "Guardando..." : "Guardar cambios"}
+            </button>
+          </form>
+        </Form>
       </div>
 
-      {/* Avatar Crop Modal */}
       <AvatarCropModal
         isOpen={showCropModal}
         onClose={() => {

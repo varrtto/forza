@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
@@ -28,6 +27,12 @@ const schema = z.object({
   email: z.union([z.string().email("Email inválido"), z.literal("")]),
   phone: z.string(),
 });
+
+const fieldClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none focus-visible:border-tape focus-visible:ring-0";
+const labelClass = "font-display text-base text-ink";
+const comboClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:border-tape";
 
 interface AddStudentFormProps {
   existingStudent?: Student | null;
@@ -59,7 +64,6 @@ export const AddStudentForm = ({
     },
   });
 
-  // Update form values when existingStudent changes
   useEffect(() => {
     if (existingStudent) {
       form.reset({
@@ -88,7 +92,6 @@ export const AddStudentForm = ({
       let response;
 
       if (isEditMode && studentId) {
-        // Update existing student
         response = await fetch(`/api/students/${studentId}`, {
           method: "PUT",
           headers: {
@@ -97,7 +100,6 @@ export const AddStudentForm = ({
           body: JSON.stringify(data),
         });
       } else {
-        // Create new student
         response = await fetch("/api/students", {
           method: "POST",
           headers: {
@@ -112,15 +114,14 @@ export const AddStudentForm = ({
       if (response.ok) {
         setSuccess(
           isEditMode
-            ? "Estudiante actualizado exitosamente"
-            : "Estudiante agregado exitosamente"
+            ? "Alumno actualizado"
+            : "Alumno agregado"
         );
 
         if (!isEditMode) {
           form.reset();
         }
 
-        // Redirect after success
         setTimeout(() => {
           if (isEditMode && studentId) {
             router.push(`/students/${studentId}`);
@@ -132,8 +133,8 @@ export const AddStudentForm = ({
         setError(
           result.error ||
             (isEditMode
-              ? "Error al actualizar el estudiante"
-              : "Error al agregar el estudiante")
+              ? "No se pudo actualizar el alumno"
+              : "No se pudo agregar el alumno")
         );
       }
     } catch {
@@ -143,16 +144,12 @@ export const AddStudentForm = ({
     }
   };
 
-  // Show loading state if session is loading
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">Cargando...</div>
-      </div>
+      <p className="py-8 text-ink/70">Cargando...</p>
     );
   }
 
-  // Redirect to login if not authenticated
   if (status === "unauthenticated") {
     router.push("/auth/signin");
     return null;
@@ -162,31 +159,32 @@ export const AddStudentForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-6"
       >
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre</FormLabel>
+              <FormLabel className={labelClass}>Nombre</FormLabel>
               <FormControl>
-                <Input type="text" {...field} />
+                <Input type="text" className={fieldClass} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="age"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Edad</FormLabel>
+              <FormItem>
+                <FormLabel className={labelClass}>Edad</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
+                    className={fieldClass}
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
                   />
@@ -199,12 +197,16 @@ export const AddStudentForm = ({
             control={form.control}
             name="gender"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Género</FormLabel>
+              <FormItem>
+                <FormLabel className={labelClass}>Género</FormLabel>
                 <FormControl>
                   <Combobox
                     value={field.value}
                     onValueChange={field.onChange}
+                    className={comboClass}
+                    placeholder="Elegir"
+                    searchPlaceholder="Buscar"
+                    emptyText="No hay opciones"
                     options={[
                       { value: "Masculino", label: "Masculino" },
                       { value: "Femenino", label: "Femenino" },
@@ -216,16 +218,17 @@ export const AddStudentForm = ({
             )}
           />
         </div>
-        <div className="flex gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="height"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Altura</FormLabel>
+              <FormItem>
+                <FormLabel className={labelClass}>Altura (cm)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
+                    className={fieldClass}
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
                   />
@@ -238,11 +241,12 @@ export const AddStudentForm = ({
             control={form.control}
             name="weight"
             render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel>Peso</FormLabel>
+              <FormItem>
+                <FormLabel className={labelClass}>Peso (kg)</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
+                    className={fieldClass}
                     {...field}
                     onChange={(e) => field.onChange(Number(e.target.value))}
                   />
@@ -257,9 +261,9 @@ export const AddStudentForm = ({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className={labelClass}>Email</FormLabel>
               <FormControl>
-                <Input type="email" {...field} />
+                <Input type="email" className={fieldClass} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -270,33 +274,29 @@ export const AddStudentForm = ({
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Teléfono</FormLabel>
+              <FormLabel className={labelClass}>Teléfono</FormLabel>
               <FormControl>
-                <Input type="tel" {...field} />
+                <Input type="tel" className={fieldClass} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        {error && (
-          <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="text-green-600 text-sm text-center bg-green-50 p-3 rounded-md">
-            {success}
-          </div>
-        )}
-        <Button type="submit" disabled={isLoading}>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {success && <p className="text-sm text-ink">{success}</p>}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="mt-2 inline-flex h-12 items-center justify-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape disabled:opacity-50"
+        >
           {isLoading
             ? isEditMode
               ? "Actualizando..."
               : "Guardando..."
             : isEditMode
-            ? "Actualizar Estudiante"
-            : "Guardar Estudiante"}
-        </Button>
+              ? "Guardar cambios"
+              : "Guardar alumno"}
+        </button>
       </form>
     </Form>
   );

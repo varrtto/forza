@@ -1,23 +1,31 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StudentWithRoutines } from "@/types";
-import {
-  ArrowLeft,
-  Calendar,
-  Mail,
-  Pencil,
-  Phone,
-  Plus,
-  Ruler,
-  Scale,
-  Trash2,
-  User,
-} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function dayCountLabel(count: number) {
+  if (count === 1) return "1 día";
+  return `${count} días`;
+}
 
 export default function StudentDetailPage({
   params,
@@ -73,7 +81,7 @@ export default function StudentDetailPage({
       });
 
       if (response.ok) {
-        router.push("/");
+        router.push("/dashboard");
       } else {
         const data = await response.json();
         setError(data.error || "Error al eliminar el estudiante");
@@ -98,7 +106,6 @@ export default function StudentDetailPage({
       });
 
       if (response.ok) {
-        // Refresh the student data to update the routines list
         fetchStudent();
       } else {
         const data = await response.json();
@@ -111,26 +118,25 @@ export default function StudentDetailPage({
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Cargando estudiante...</p>
-          </div>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-5xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-ink/70">Cargando...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !student) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-5xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-lg text-destructive">{error}</p>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
@@ -138,211 +144,157 @@ export default function StudentDetailPage({
 
   if (!student) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Estudiante no encontrado</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-5xl px-4 py-10 md:px-8 md:py-14">
+          <h1 className="font-display text-5xl tracking-tight">
+            Alumno no encontrado
+          </h1>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
   }
 
+  const stats = [
+    { label: "Edad", value: `${student.age}` },
+    { label: "cm", value: `${student.height}` },
+    { label: "kg", value: `${student.weight}` },
+    { label: "Género", value: student.gender },
+  ];
+
+  const contact = [student.email, student.phone].filter(Boolean).join("  ");
+  const routinesCount = student.routines.length;
+  const routinesLabel =
+    routinesCount === 1 ? "1 rutina" : `${routinesCount} rutinas`;
+
   return (
-    <div className="flex flex-col justify-center items-center min-h-[calc(100vh-72px)]">
-      <div className="min-w-[60%] max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col items-center justify-between mb-6 gap-4">
-          <h1 className="text-3xl font-bold">{student.name}</h1>
-          <div className="flex md:items-center justify-between md:justify-center md:gap-4 w-full">
-            <Button
-              onClick={() => router.push("/dashboard")}
-              variant="outline"
-              size="sm"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver
-            </Button>
-            <Button
-              onClick={() => router.push(`/students/${resolvedParams.id}/edit`)}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Pencil className="h-4 w-4" />
-              Editar
-            </Button>
-            <Button
-              onClick={handleDeleteStudent}
-              variant="destructive"
-              size="sm"
-            >
-              Eliminar Estudiante
-            </Button>
+    <div className="gym-floor min-h-[calc(100vh-72px)]">
+      <div className="mx-auto w-full max-w-5xl px-4 py-10 md:px-8 md:py-14">
+        <div className="flex items-start gap-4 md:gap-6">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center bg-ink font-display text-2xl text-floor md:h-20 md:w-20 md:text-3xl dark:bg-tape dark:text-on-tape">
+            {initials(student.name)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-5xl tracking-tight md:text-7xl">
+              {student.name}
+            </h1>
+            {contact && (
+              <p className="mt-3 truncate text-ink/60">{contact}</p>
+            )}
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Personal Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Información Personal
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Edad</p>
-                  <p className="font-medium">{student.age} años</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Género</p>
-                  <p className="font-medium">{student.gender}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Altura</p>
-                  <p className="font-medium flex items-center gap-1">
-                    <Ruler className="h-4 w-4" />
-                    {student.height} cm
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Peso</p>
-                  <p className="font-medium flex items-center gap-1">
-                    <Scale className="h-4 w-4" />
-                    {student.weight} kg
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <dl className="gym-rail mt-8 grid grid-cols-2 md:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="border-floor/15 px-5 py-4 not-first:border-l max-md:[&:nth-child(odd)]:border-l-0 max-md:[&:nth-child(n+3)]:border-t"
+            >
+              <dt className="text-sm text-current/55">{stat.label}</dt>
+              <dd className="mt-1 font-display text-3xl leading-none tracking-tight">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
 
-          {/* Contact Information */}
-          {(student.email.length > 0 || student.phone.length > 0) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
-                  Información de Contacto
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                {student.email && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{student.email}</p>
-                  </div>
-                )}
-                {student.phone && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Teléfono</p>
-                    <p className="font-medium flex items-center gap-1">
-                      <Phone className="h-4 w-4" />
-                      {student.phone}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+        <div className="mt-6 flex flex-wrap items-center gap-5">
+          <Link
+            href={`/students/${resolvedParams.id}/edit`}
+            className="font-display text-base text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Editar ficha
+          </Link>
+          <button
+            type="button"
+            onClick={handleDeleteStudent}
+            className="cursor-pointer font-display text-base text-ink/45 transition-colors hover:text-destructive"
+          >
+            Eliminar alumno
+          </button>
         </div>
 
-        {/* Routines Section */}
-        <Card className="mt-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Rutinas ({student.routines.length})
-              </CardTitle>
-              {student.routines.length > 0 && (
-                <Button
-                  onClick={() =>
-                    router.push(`/add-routine?studentId=${student.id}`)
-                  }
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Nueva Rutina
-                </Button>
-              )}
+        {error && <p className="mt-6 text-sm text-destructive">{error}</p>}
+
+        <section className="mt-16">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="font-display text-4xl tracking-tight md:text-5xl">
+                Rutinas
+              </h2>
+              <p className="mt-2 text-ink/65">{routinesLabel}</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            {student.routines.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
-                  Este estudiante no tiene rutinas creadas
-                </p>
-                <Button
-                  onClick={() =>
-                    router.push(`/add-routine?studentId=${student.id}`)
-                  }
-                  variant="outline"
-                >
-                  Crear Primera Rutina
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {student.routines.map((routine) => (
-                  <div
-                    key={routine.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-medium">{routine.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Creada:{" "}
-                          {new Date(routine.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex flex-col md:flex-row gap-2">
-                        <Button
-                          onClick={() => router.push(`/routines/${routine.id}`)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Ver Rutina
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            router.push(`/routines/${routine.id}/edit`)
-                          }
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center gap-1"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Editar
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteRoutine(routine.id)}
-                          variant="destructive"
-                          size="sm"
-                          className="flex items-center gap-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Eliminar
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {routinesCount > 0 && (
+              <Link
+                href={`/add-routine?studentId=${student.id}`}
+                className="inline-flex h-12 shrink-0 items-center justify-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape"
+              >
+                Nueva rutina
+              </Link>
             )}
-          </CardContent>
-        </Card>
+          </div>
+
+          {routinesCount === 0 ? (
+            <div className="mt-8">
+              <p className="max-w-md text-lg text-ink/70">
+                Todavía no hay una rutina para este alumno.
+              </p>
+              <Link
+                href={`/add-routine?studentId=${student.id}`}
+                className="mt-6 inline-flex h-12 items-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape"
+              >
+                Armar primera rutina
+              </Link>
+            </div>
+          ) : (
+            <ul className="mt-6">
+              {student.routines.map((routine) => {
+                const days = routine.routine_data?.days?.length ?? 0;
+                return (
+                  <li
+                    key={routine.id}
+                    className="group relative border-b border-ink/15"
+                  >
+                    <Link
+                      href={`/routines/${routine.id}`}
+                      className="block py-5 pr-24 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape"
+                    >
+                      <span className="block font-display text-2xl leading-none tracking-tight md:text-3xl">
+                        {routine.name}
+                      </span>
+                      <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink/65">
+                        <span>{formatDate(routine.created_at)}</span>
+                        {days > 0 && <span>{dayCountLabel(days)}</span>}
+                      </span>
+                    </Link>
+                    <div className="absolute top-5 right-0 flex items-center gap-1">
+                      <Link
+                        href={`/routines/${routine.id}/edit`}
+                        aria-label={`Editar ${routine.name}`}
+                        className="flex h-9 w-9 items-center justify-center text-ink/40 transition-colors hover:text-ink"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRoutine(routine.id)}
+                        aria-label={`Eliminar ${routine.name}`}
+                        className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink/40 transition-colors hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
     </div>
   );

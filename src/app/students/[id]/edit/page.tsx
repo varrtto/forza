@@ -1,11 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { AddStudentForm } from "@/features/addStudentForm";
-import { Student } from "@/types";
-import { ArrowLeft } from "lucide-react";
+import type { Student } from "@/types";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
@@ -50,12 +48,9 @@ export default function EditStudentPage({
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Cargando estudiante...</p>
-          </div>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-ink/70">Cargando...</p>
         </div>
       </div>
     );
@@ -63,13 +58,15 @@ export default function EditStudentPage({
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-lg text-destructive">{error}</p>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
@@ -77,43 +74,41 @@ export default function EditStudentPage({
 
   if (!student) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Estudiante no encontrado</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-xl px-4 py-10 md:px-8 md:py-14">
+          <h1 className="font-display text-5xl tracking-tight">
+            Alumno no encontrado
+          </h1>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-[calc(100vh-72px)]">
-      <div className="w-full max-w-xl mx-auto px-4">
-        {/* Header */}
-        <div className="flex flex-col items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-center">{student.name}</h1>
-          <Button
-            onClick={() => router.push(`/students/${resolvedParams.id}`)}
-            variant="outline"
-            size="sm"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancelar
-          </Button>
+    <div className="gym-floor min-h-[calc(100vh-72px)]">
+      <div className="mx-auto w-full max-w-xl px-4 py-10 md:px-8 md:py-14">
+        <Link
+          href={`/students/${resolvedParams.id}`}
+          className="font-display text-base text-ink/65 underline decoration-tape decoration-2 underline-offset-4 transition-colors hover:text-ink"
+        >
+          Volver a la ficha
+        </Link>
+        <h1 className="mt-6 font-display text-5xl tracking-tight md:text-7xl">
+          Editar alumno
+        </h1>
+        <p className="mt-3 max-w-md text-lg text-ink/70">{student.name}</p>
+        <div className="mt-10">
+          <AddStudentForm
+            existingStudent={student}
+            studentId={resolvedParams.id}
+          />
         </div>
-
-        {/* Edit Form */}
-        <Card className="border-0 shadow-none md:border md:shadow-sm">
-          <CardContent>
-            <AddStudentForm
-              existingStudent={student}
-              studentId={resolvedParams.id}
-            />
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

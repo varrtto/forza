@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button";
 import useRoutineStore from "@/state/newRoutine";
 import { Routine } from "@/types";
 import { generatePDF } from "@/utils/generatePDF";
-import { FileText, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -38,7 +36,6 @@ export const SaveButton = ({
       let response;
 
       if (isEditMode && routineId) {
-        // Update existing routine
         response = await fetch(`/api/routines/${routineId}`, {
           method: "PUT",
           headers: {
@@ -49,7 +46,6 @@ export const SaveButton = ({
           }),
         });
       } else {
-        // Create new routine
         response = await fetch("/api/routines", {
           method: "POST",
           headers: {
@@ -65,18 +61,12 @@ export const SaveButton = ({
       const result = await response.json();
 
       if (response.ok) {
-        setSuccess(
-          isEditMode
-            ? "Rutina actualizada exitosamente"
-            : "Rutina guardada exitosamente"
-        );
+        setSuccess(isEditMode ? "Rutina actualizada" : "Rutina guardada");
 
         setTimeout(() => {
           if (isEditMode && routineId) {
-            // Redirect to routine detail page
             router.push(`/routines/${routineId}`);
           } else {
-            // Reset and redirect to student profile
             resetRoutine();
             router.push(`/students/${routine.studentId}`);
           }
@@ -104,64 +94,55 @@ export const SaveButton = ({
     setIsGenerating(true);
     setError("");
     try {
-      // Fetch user profile to get avatar URL for watermark
-        let avatarUrl;
+      let avatarUrl;
       try {
-          const profileResponse = await fetch("/api/user/profile");
+        const profileResponse = await fetch("/api/user/profile");
         if (profileResponse.ok) {
-            const profileData = await profileResponse.json();
-              avatarUrl = profileData.user.avatar_url;
-            }
-          } catch (profileError) {
-            console.warn("Could not fetch user profile for watermark:", profileError);
-          }
+          const profileData = await profileResponse.json();
+          avatarUrl = profileData.user.avatar_url;
+        }
+      } catch (profileError) {
+        console.warn(
+          "Could not fetch user profile for watermark:",
+          profileError
+        );
+      }
 
-          await generatePDF(routine, avatarUrl);
+      await generatePDF(routine, avatarUrl);
     } catch {
-  setError("Error al generar el PDF");
-  } finally {
-  setIsGenerating(false);
-  }
+      setError("Error al generar el PDF");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 pt-6">
-      {error && (
-        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md max-w-md">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="text-green-600 text-sm text-center bg-green-50 p-3 rounded-md max-w-md">
-          {success}
-        </div>
-      )}
-      <div className="flex gap-4">
-        <Button
-          onClick={handleGeneratePDF}
-          variant="outline"
-          size="lg"
-          className="px-8 flex items-center gap-2"
-          disabled={!routine.studentId || isGenerating || isSaving}
-        >
-          <FileText className="h-4 w-4" />
-          {isGenerating ? "Generando..." : "Generar PDF"}
-        </Button>
-        <Button
+    <div className="flex flex-col gap-4 border-t border-ink/15 pt-8">
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {success && <p className="text-sm text-ink">{success}</p>}
+      <div className="flex flex-wrap items-center gap-5">
+        <button
+          type="button"
           onClick={handleSaveToStudent}
-          size="lg"
-          className="px-8 flex items-center gap-2"
           disabled={isSaving || isGenerating || (!routine.studentId && !isEditMode)}
+          className="inline-flex h-12 cursor-pointer items-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape disabled:opacity-50"
         >
-          <Save className="h-4 w-4" />
           {isSaving
             ? isEditMode
               ? "Actualizando..."
               : "Guardando..."
             : isEditMode
-            ? "Actualizar Rutina"
-            : "Guardar Rutina"}
-        </Button>
+              ? "Guardar cambios"
+              : "Guardar rutina"}
+        </button>
+        <button
+          type="button"
+          onClick={handleGeneratePDF}
+          disabled={!routine.studentId || isGenerating || isSaving}
+          className="cursor-pointer font-display text-base text-ink/70 underline decoration-tape decoration-2 underline-offset-4 hover:text-ink disabled:opacity-40"
+        >
+          {isGenerating ? "Generando PDF..." : "Generar PDF"}
+        </button>
       </div>
     </div>
   );

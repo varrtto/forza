@@ -1,13 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import useRoutineStore from "@/state/newRoutine";
 import { RoutineType, Student } from "@/types";
-import { Plus, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { DAYS_OF_WEEK } from "../addRoutineForm.constants";
@@ -16,6 +12,9 @@ interface CreateRoutineCardProps {
   preSelectedStudentId?: string | null;
   isEditMode?: boolean;
 }
+
+const comboClass =
+  "h-11 rounded-none border-0 border-b border-ink/25 bg-transparent px-0 shadow-none hover:bg-transparent focus-visible:border-tape";
 
 export const CreateRoutineCard = ({
   preSelectedStudentId,
@@ -42,7 +41,6 @@ export const CreateRoutineCard = ({
     }
   }, [session]);
 
-  // Pre-select student if provided
   useEffect(() => {
     if (preSelectedStudentId && students.length > 0) {
       const studentExists = students.some(
@@ -69,39 +67,115 @@ export const CreateRoutineCard = ({
     }
   };
 
-  // Convert students to combobox options
   const studentOptions: ComboboxOption[] = students.map((student) => ({
     value: student.id,
     label: student.name,
   }));
+
+  const selectedStudent = students.find(
+    (student) => student.id === routine.studentId
+  );
+
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Agregar Día de Entrenamiento
-          </CardTitle>
-          {routine.days.length > 0 && (
-            <Button
-              onClick={resetRoutine}
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Resetear
-            </Button>
+    <section>
+      <div className="flex items-end justify-between gap-4">
+        <h2 className="font-display text-3xl tracking-tight md:text-4xl">
+          Armado
+        </h2>
+        {routine.days.length > 0 && (
+          <button
+            type="button"
+            onClick={resetRoutine}
+            className="inline-flex cursor-pointer items-center gap-2 font-display text-sm text-ink/50 hover:text-ink"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Resetear
+          </button>
+        )}
+      </div>
+
+      {!isEditMode && (
+        <div className="mt-8">
+          <Label
+            htmlFor="student-combobox"
+            className="font-display text-base text-ink"
+          >
+            Alumno
+          </Label>
+          {preSelectedStudentId && selectedStudent ? (
+            <p className="mt-2 font-display text-2xl tracking-tight">
+              {selectedStudent.name}
+            </p>
+          ) : (
+            <>
+              <Combobox
+                id="student-combobox"
+                value={routine.studentId || ""}
+                onValueChange={updateSelectedStudent}
+                options={studentOptions}
+                placeholder="Elegir alumno"
+                searchPlaceholder="Buscar alumno"
+                emptyText="No se encontraron alumnos."
+                disabled={loading}
+                className={`mt-1 ${comboClass}`}
+              />
+              {students.length === 0 && !loading && (
+                <p className="mt-2 text-sm text-ink/55">
+                  No hay alumnos. Agregá uno primero.
+                </p>
+              )}
+            </>
           )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex gap-2 flex-wrap">
-            {availableDays?.map((day) => (
-              <Button
+      )}
+
+      <div className="mt-8">
+        <p className="font-display text-base text-ink">Tipo</p>
+        <ToggleGroup
+          type="single"
+          value={routine.type || "regular"}
+          onValueChange={(value) =>
+            value && setRoutineType(value as RoutineType)
+          }
+          className="mt-3 flex w-full flex-col gap-0 border border-ink/15 md:flex-row"
+          spacing={0}
+        >
+          <ToggleGroupItem
+            value="regular"
+            aria-label="Rutina Regular"
+            className="h-11 w-full rounded-none border-0 bg-transparent font-display text-sm text-ink/70 shadow-none hover:bg-transparent hover:text-ink data-[state=on]:bg-tape data-[state=on]:text-on-tape md:flex-1"
+          >
+            Regular
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="fullBody"
+            aria-label="Rutina Completa"
+            className="h-11 w-full rounded-none border-0 border-t border-ink/15 bg-transparent font-display text-sm text-ink/70 shadow-none hover:bg-transparent hover:text-ink data-[state=on]:bg-tape data-[state=on]:text-on-tape md:flex-1 md:border-t-0 md:border-l"
+          >
+            Full body
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="pushPullLegs"
+            aria-label="Empuje/Tirón/Piernas"
+            className="h-11 w-full rounded-none border-0 border-t border-ink/15 bg-transparent font-display text-sm text-ink/70 shadow-none hover:bg-transparent hover:text-ink data-[state=on]:bg-tape data-[state=on]:text-on-tape md:flex-1 md:border-t-0 md:border-l"
+          >
+            Empuje / tirón / piernas
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      <div className="mt-8">
+        <p className="font-display text-base text-ink">Días</p>
+        {availableDays.length === 0 ? (
+          <p className="mt-3 text-sm text-ink/55">
+            Ya están los siete días en la rutina.
+          </p>
+        ) : (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {availableDays.map((day) => (
+              <button
                 key={day}
-                variant="outline"
+                type="button"
                 onClick={() =>
                   addDay({
                     id: crypto.randomUUID(),
@@ -109,78 +183,14 @@ export const CreateRoutineCard = ({
                     muscleGroups: [],
                   })
                 }
-                className="flex items-center gap-2"
+                className="h-10 cursor-pointer border border-ink/20 px-3 font-display text-sm text-ink/80 transition-colors hover:border-tape hover:text-ink"
               >
-                <Plus className="h-4 w-4" />
                 {day}
-              </Button>
+              </button>
             ))}
           </div>
-          {availableDays.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              Todos los días han sido agregados a tu rutina
-            </p>
-          )}
-          {!isEditMode && (
-            <div className="w-full">
-              <Label
-                htmlFor="student-combobox"
-                className="text-xs text-muted-foreground"
-              >
-                Seleccionar Estudiante
-              </Label>
-              <Combobox
-                value={routine.studentId || ""}
-                onValueChange={updateSelectedStudent}
-                options={studentOptions}
-                placeholder="Selecciona un estudiante"
-                searchPlaceholder="Buscar estudiante..."
-                emptyText="No se encontraron estudiantes."
-                disabled={loading}
-                className="mt-1"
-              />
-              {students.length === 0 && !loading && (
-                <p className="text-muted-foreground text-xs mt-1">
-                  No hay estudiantes disponibles. Agrega un estudiante primero.
-                </p>
-              )}
-            </div>
-          )}
-          <div className="space-y-3 pt-2">
-            <ToggleGroup
-              type="single"
-              value={routine.type || "regular"}
-              onValueChange={(value) =>
-                value && setRoutineType(value as RoutineType)
-              }
-              className="justify-start flex flex-col md:flex-row border "
-              spacing={0.1}
-            >
-              <ToggleGroupItem
-                value="regular"
-                aria-label="Rutina Regular"
-                className="rounded-none rounded-t-md md:rounded-none md:rounded-l-md w-full md:w-auto"
-              >
-                Rutina Regular
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="fullBody"
-                aria-label="Rutina Completa"
-                className="rounded-none w-full md:w-auto"
-              >
-                Rutina Full Body
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="pushPullLegs"
-                aria-label="Empuje/Tirón/Piernas"
-                className="rounded-none rounded-b-md md:rounded-none md:rounded-r-md w-full md:w-auto"
-              >
-                Empuje/Tirón/Piernas
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </section>
   );
 };

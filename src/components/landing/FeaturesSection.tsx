@@ -1,111 +1,53 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Dumbbell, FileText, TrendingUp, Users, Zap } from "lucide-react";
+const features = [
+  {
+    title: "Ficha de alumnos",
+    body: "Nombre, medidas y contacto. Lo que hace falta para armar el plan.",
+  },
+  {
+    title: "Rutinas por día",
+    body: "Grupos, ejercicios, series y kilos. Una semana clara para cada alumno.",
+  },
+  {
+    title: "PDF para imprimir",
+    body: "La rutina sale en papel, lista para el locker o el mostrador.",
+  },
+  {
+    title: "Ejercicios propios",
+    body: "Sumá los movimientos de tu gimnasio, aparte de la biblioteca.",
+  },
+  {
+    title: "Historial",
+    body: "Las rutinas anteriores quedan. Ves qué hizo cada alumno.",
+  },
+  {
+    title: "Desde el celular",
+    body: "Cargá entre series. No hace falta sentarte a una planilla.",
+  },
+];
 
 export function FeaturesSection() {
   return (
-    <section className="px-4 py-20 bg-white dark:bg-background">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Todo lo que necesitas en un solo lugar
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Simplifica tu trabajo como entrenador con herramientas diseñadas
-            específicamente para ti
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Gestión de Estudiantes</h3>
-                <p className="text-muted-foreground">
-                  Administra toda la información de tus clientes en un solo
-                  lugar. Datos personales, historial y progreso.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Dumbbell className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Creación de Rutinas</h3>
-                <p className="text-muted-foreground">
-                  Diseña rutinas personalizadas con ejercicios específicos,
-                  series, repeticiones y pesos para cada cliente.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">PDFs Profesionales</h3>
-                <p className="text-muted-foreground">
-                  Genera documentos PDF listos para imprimir con un solo
-                  click. Formato compacto para rutinas full body.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Planificación Semanal</h3>
-                <p className="text-muted-foreground">
-                  Organiza entrenamientos por día de la semana. Estructura
-                  clara y fácil de seguir para tus clientes.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Zap className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Rápido y Eficiente</h3>
-                <p className="text-muted-foreground">
-                  Interfaz intuitiva que te permite crear rutinas completas
-                  en minutos, no horas.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Seguimiento</h3>
-                <p className="text-muted-foreground">
-                  Mantén el historial de rutinas de cada cliente y observa su
-                  evolución en el tiempo.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <section className="px-4 py-16 md:px-8 md:py-24">
+      <div className="mx-auto w-full max-w-5xl">
+        <h2 className="font-display text-4xl tracking-tight md:text-6xl">
+          Lo que usás en el día
+        </h2>
+        <p className="mt-4 max-w-md text-lg text-ink/70">
+          Alumnos, rutinas y PDF. El resto sobra.
+        </p>
+        <ul className="mt-12 grid gap-x-12 md:grid-cols-2">
+          {features.map((feature) => (
+            <li
+              key={feature.title}
+              className="border-b border-ink/15 py-6 last:border-b-0 md:last:border-b md:[&:nth-last-child(-n+2)]:border-b-0"
+            >
+              <h3 className="border-b border-tape pb-1 font-display text-2xl tracking-tight">
+                {feature.title}
+              </h3>
+              <p className="mt-3 text-ink/70">{feature.body}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

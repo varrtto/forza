@@ -1,12 +1,33 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RoutineWithStudent } from "@/types";
-import { ArrowLeft, Calendar, FileText, Pencil } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("es-AR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function seriesLabel(count: number) {
+  return count === 1 ? "1 serie" : `${count} series`;
+}
+
+function dayCountLabel(count: number) {
+  return count === 1 ? "1 día" : `${count} días`;
+}
+
+function routineTypeLabel(type?: string, isFullBody?: boolean) {
+  if (type === "pushPullLegs") return "Empuje / tirón / piernas";
+  if (type === "fullBody" || isFullBody) return "Full body";
+  if (type === "regular") return "Regular";
+  return null;
+}
 
 export default function RoutineDetailPage({
   params,
@@ -54,50 +75,50 @@ export default function RoutineDetailPage({
     setIsGenerating(true);
     setError("");
     try {
-      // Fetch user profile to get avatar URL for watermark
       let avatarUrl;
       try {
         const profileResponse = await fetch("/api/user/profile");
         if (profileResponse.ok) {
-        const profileData = await profileResponse.json();
+          const profileData = await profileResponse.json();
           avatarUrl = profileData.user.avatar_url;
         }
       } catch (profileError) {
-        console.warn("Could not fetch user profile for watermark:", profileError);
+        console.warn(
+          "Could not fetch user profile for watermark:",
+          profileError
+        );
       }
 
-  // Import generatePDF dynamically
-  const { generatePDF } = await import("@/utils/generatePDF");
-  await generatePDF(routine.routine_data, avatarUrl);
-  } catch {
-  setError("Error al generar el PDF");
-  } finally {
-  setIsGenerating(false);
-  }
+      const { generatePDF } = await import("@/utils/generatePDF");
+      await generatePDF(routine.routine_data, avatarUrl);
+    } catch {
+      setError("Error al generar el PDF");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Cargando rutina...</p>
-          </div>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-3xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-ink/70">Cargando...</p>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !routine) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-3xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-lg text-destructive">{error}</p>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
@@ -105,155 +126,157 @@ export default function RoutineDetailPage({
 
   if (!routine) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Rutina no encontrada</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-3xl px-4 py-10 md:px-8 md:py-14">
+          <h1 className="font-display text-5xl tracking-tight">
+            Rutina no encontrada
+          </h1>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
   }
 
+  const days = routine.routine_data?.days ?? [];
+  const typeLabel = routineTypeLabel(
+    routine.routine_data?.type,
+    routine.routine_data?.isFullBody
+  );
+  const stats = [
+    { label: "Alumno", value: routine.students.name },
+    { label: "Días", value: String(days.length) },
+    { label: "Creada", value: formatDate(routine.created_at) },
+    routine.updated_at
+      ? { label: "Actualizada", value: formatDate(routine.updated_at) }
+      : null,
+  ].filter(Boolean) as { label: string; value: string }[];
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col items-center justify-between mb-6 gap-4">
-          <p className="text-xl font-bold">Rutina de</p>
-          <p className="text-xl font-bold">{routine.students.name}</p>
-          <div className="flex md:items-center justify-between md:justify-center md:gap-4 w-full">
-            <Button
-              onClick={() => router.push(`/students/${routine.students.id}`)}
-              variant="outline"
-              size="sm"
+    <div className="gym-floor min-h-[calc(100vh-72px)]">
+      <div className="mx-auto w-full max-w-3xl px-4 py-10 md:px-8 md:py-14">
+        <Link
+          href={`/students/${routine.students.id}`}
+          className="font-display text-base text-ink/65 underline decoration-tape decoration-2 underline-offset-4 transition-colors hover:text-ink"
+        >
+          {routine.students.name}
+        </Link>
+        <h1 className="mt-4 font-display text-5xl tracking-tight md:text-7xl">
+          {routine.name || routine.routine_data?.name || "Rutina"}
+        </h1>
+        <p className="mt-3 flex flex-wrap gap-x-4 text-ink/65">
+          {typeLabel && <span>{typeLabel}</span>}
+          <span>{dayCountLabel(days.length)}</span>
+        </p>
+
+        <dl
+          className={`gym-rail mt-8 grid ${
+            stats.length === 4 ? "grid-cols-2 md:grid-cols-4" : "grid-cols-3"
+          }`}
+        >
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="border-floor/15 px-5 py-4 not-first:border-l max-md:[&:nth-child(odd)]:border-l-0 max-md:[&:nth-child(n+3)]:border-t"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver
-            </Button>
-            <Button
-              onClick={() => router.push(`/routines/${resolvedParams.id}/edit`)}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Pencil className="h-4 w-4" />
-              Editar
-            </Button>
-            <Button
-              onClick={handleGeneratePDF}
-              variant="outline"
-              className="flex items-center gap-2"
-              disabled={isGenerating}
-            >
-              <FileText className="h-4 w-4" />
-              {isGenerating ? "Generando..." : "Generar PDF"}
-            </Button>
-          </div>
-          <div className="flex gap-2"></div>
+              <dt className="text-sm text-current/55">{stat.label}</dt>
+              <dd className="mt-1 truncate font-display text-xl leading-none tracking-tight">
+                {stat.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-6 flex flex-wrap items-center gap-5">
+          <button
+            type="button"
+            onClick={handleGeneratePDF}
+            disabled={isGenerating}
+            className="inline-flex h-12 cursor-pointer items-center bg-tape px-5 font-display text-lg tracking-wide text-on-tape transition-colors hover:bg-tape/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tape disabled:opacity-50"
+          >
+            {isGenerating ? "Generando..." : "Generar PDF"}
+          </button>
+          <Link
+            href={`/routines/${resolvedParams.id}/edit`}
+            className="font-display text-base text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Editar rutina
+          </Link>
         </div>
 
-        {/* Routine Info */}
-        <Card>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Creada:</p>
-                <p className="font-medium">
-                  {new Date(routine.created_at).toLocaleDateString()}
-                </p>
-              </div>
+        {error && <p className="mt-6 text-sm text-destructive">{error}</p>}
 
-              {routine.updated_at && (
-                <div>
-                  <p className="text-muted-foreground">Última actualización:</p>
-                  <p className="font-medium">
-                    {new Date(routine.updated_at).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Routine Details */}
-        <div className="space-y-6">
-          {routine.routine_data.days?.map((day, dayIndex) => (
-            <Card key={day.id}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Día {dayIndex + 1}: {day.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {day.muscleGroups.map((muscleGroup) => (
-                    <div key={muscleGroup.id} className="space-y-4">
-                      <h3 className="text-lg font-semibold text-primary">
-                        {muscleGroup.name}
-                      </h3>
-                      <div className="space-y-3">
-                        {muscleGroup.exercises.map((exercise) => (
-                          <div
-                            key={exercise.id}
-                            className="border rounded-lg p-4 bg-muted/30"
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-medium">{exercise.name}</h4>
-                              <span className="text-sm text-muted-foreground">
-                                {exercise.series} serie(s)
-                              </span>
-                            </div>
-
-                            {/* Sets Table */}
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="border-b">
-                                    <th className="text-left py-2">Serie</th>
-                                    <th className="text-left py-2">Reps</th>
-                                    <th className="text-left py-2">Peso</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
+        {days.length === 0 ? (
+          <p className="mt-16 max-w-md text-lg text-ink/70">
+            Esta rutina todavía no tiene días.
+          </p>
+        ) : (
+          <div className="mt-16 flex flex-col gap-14">
+            {days.map((day) => (
+              <section key={day.id}>
+                <h2 className="border-b border-tape pb-2 font-display text-3xl tracking-tight md:text-4xl">
+                  {day.name}
+                </h2>
+                {day.muscleGroups.length === 0 ? (
+                  <p className="mt-4 text-ink/55">Sin grupos en este día.</p>
+                ) : (
+                  <div className="mt-6 flex flex-col gap-8">
+                    {day.muscleGroups.map((muscleGroup) => (
+                      <div key={muscleGroup.id}>
+                        <h3 className="font-display text-xl tracking-tight">
+                          {muscleGroup.name}
+                        </h3>
+                        {muscleGroup.exercises.length === 0 ? (
+                          <p className="mt-2 text-sm text-ink/55">
+                            Sin ejercicios.
+                          </p>
+                        ) : (
+                          <ul className="mt-2">
+                            {muscleGroup.exercises.map((exercise) => (
+                              <li
+                                key={exercise.id}
+                                className="border-b border-ink/15 py-4"
+                              >
+                                <div className="flex items-baseline justify-between gap-4">
+                                  <p className="font-display text-lg tracking-tight">
+                                    {exercise.name || "Sin nombre"}
+                                  </p>
+                                  <p className="shrink-0 text-sm text-ink/55">
+                                    {seriesLabel(exercise.series)}
+                                  </p>
+                                </div>
+                                <ol className="mt-3 space-y-1 text-sm text-ink/70">
                                   {Array.from(
                                     { length: exercise.series },
                                     (_, i) => (
-                                      <tr key={i} className="border-b">
-                                        <td className="py-2">{i + 1}</td>
-                                        <td className="py-2">
-                                          {exercise.reps[i] || 0}
-                                        </td>
-                                        <td className="py-2">
-                                          {exercise.weight[i] || 0} kg
-                                        </td>
-                                      </tr>
+                                      <li key={i}>
+                                        Serie {i + 1}: {exercise.reps[i] || 0}{" "}
+                                        reps · {exercise.weight[i] || 0} kg
+                                      </li>
                                     )
                                   )}
-                                </tbody>
-                              </table>
-                            </div>
-
-                            {/* Exercise Details */}
-                            {exercise.details && (
-                              <div className="mt-3 pt-3 border-t">
-                                <p className="text-sm text-muted-foreground">
-                                  <strong>Detalles:</strong> {exercise.details}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                                </ol>
+                                {exercise.details && (
+                                  <p className="mt-3 text-sm text-ink/55">
+                                    {exercise.details}
+                                  </p>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

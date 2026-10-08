@@ -14,7 +14,6 @@ export const TopLeft = ({
 }) => {
   const [mounted, setMounted] = useState(false);
 
-
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -26,46 +25,44 @@ export const TopLeft = ({
     <Link
       href="/"
       onClick={closeMobileMenu}
-      className="flex items-center gap-3 group"
+      className="flex min-w-0 items-center gap-3"
     >
       {hasCustomBranding ? (
         <>
-          {/* Custom Gym Logo */}
-          <div className="relative w-14 h-14 rounded-full overflow-hidden bg-muted flex-shrink-0 border-2 border-border transition-colors">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-floor">
             <Image
               src={session.user.avatar_url!}
               alt={session.user.gym_name!}
               fill
               className="object-cover"
-              sizes="100px"
+              sizes="48px"
               priority
             />
           </div>
-          <div className="flex flex-col items-start justify-center relative">
-            <h1 className="text-2xl font-bold leading-none mb-0.5">
+          <div className="min-w-0">
+            <p className="truncate font-display text-xl leading-none tracking-tight">
               {session.user.gym_name}
-            </h1>
-            <span className="text-[8px] text-muted-foreground font-medium leading-none -mt-1">
-              by FORZA
-            </span>
+            </p>
+            <p className="mt-1 text-[11px] leading-none text-current/55">
+              Forza
+            </p>
           </div>
         </>
       ) : (
         <>
-          {/* Default Forza Logo */}
-          <div className="relative w-14 h-14 rounded-full overflow-hidden bg-muted flex-shrink-0 border-2 border-border transition-colors">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden bg-floor">
             <Image
-              src={"/forza-logo.png"}
-              alt="Forza Logo"
+              src="/forza-logo.png"
+              alt="Forza"
               fill
               className="object-cover"
-              sizes="100px"
+              sizes="48px"
               priority
             />
           </div>
-          <div className="flex flex-col items-start justify-center relative">
-            <h1 className="text-2xl font-bold leading-none mb-0.5">Forza</h1>
-          </div>
+          <p className="font-display text-xl leading-none tracking-tight">
+            Forza
+          </p>
         </>
       )}
     </Link>

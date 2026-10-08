@@ -1,8 +1,9 @@
 export function Footer() {
   return (
-    <footer className="px-4 py-8 bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto max-w-6xl text-center text-muted-foreground">
-        <p>&copy; 2025 Forza. Todos los derechos reservados.</p>
+    <footer className="gym-bar px-4 py-6 md:px-8">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4">
+        <p className="font-display text-lg tracking-tight">Forza</p>
+        <p className="text-sm text-current/55">© 2026</p>
       </div>
     </footer>
   );

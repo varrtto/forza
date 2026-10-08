@@ -9,14 +9,13 @@ export default async function AuthLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-  // Redirect to home if already authenticated
   if (session) {
     redirect("/");
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-72px)] items-center justify-center bg-gray-50 px-4">
-      {children}
+    <div className="gym-floor flex min-h-[calc(100vh-72px)] items-center justify-center px-4 py-12">
+      <div className="w-full max-w-xl">{children}</div>
     </div>
   );
 }

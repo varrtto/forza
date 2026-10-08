@@ -1,10 +1,9 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { AddRoutineForm } from "@/features/addRoutineForm";
 import { RoutineWithStudent } from "@/types";
-import { ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useState } from "react";
 
@@ -49,12 +48,9 @@ export default function EditRoutinePage({
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Cargando rutina...</p>
-          </div>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-2xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-ink/70">Cargando...</p>
         </div>
       </div>
     );
@@ -62,13 +58,15 @@ export default function EditRoutinePage({
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-2xl px-4 py-10 md:px-8 md:py-14">
+          <p className="text-lg text-destructive">{error}</p>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
@@ -76,42 +74,43 @@ export default function EditRoutinePage({
 
   if (!routine) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Rutina no encontrada</p>
-          <Button onClick={() => router.push("/")} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver al inicio
-          </Button>
+      <div className="gym-floor min-h-[calc(100vh-72px)]">
+        <div className="mx-auto w-full max-w-2xl px-4 py-10 md:px-8 md:py-14">
+          <h1 className="font-display text-5xl tracking-tight">
+            Rutina no encontrada
+          </h1>
+          <Link
+            href="/dashboard"
+            className="mt-6 inline-block font-display text-lg text-ink underline decoration-tape decoration-2 underline-offset-4"
+          >
+            Ir a alumnos
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="font-sans min-h-screen items-center justify-items-center pt-10 px-4 md:px-0">
-      <div className="w-full max-w-xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold text-center">
-            {routine.students.name}
-          </h1>
-          <Button
-            onClick={() => router.push(`/routines/${resolvedParams.id}`)}
-            variant="outline"
-            size="sm"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Cancelar
-          </Button>
-          <div></div>
+    <div className="gym-floor min-h-[calc(100vh-72px)]">
+      <div className="mx-auto w-full max-w-2xl px-4 py-10 md:px-8 md:py-14">
+        <Link
+          href={`/routines/${resolvedParams.id}`}
+          className="font-display text-base text-ink/65 underline decoration-tape decoration-2 underline-offset-4 transition-colors hover:text-ink"
+        >
+          Cancelar
+        </Link>
+        <h1 className="mt-6 font-display text-5xl tracking-tight md:text-7xl">
+          Editar rutina
+        </h1>
+        <p className="mt-3 max-w-md text-lg text-ink/70">
+          {routine.students.name}
+        </p>
+        <div className="mt-10">
+          <AddRoutineForm
+            existingRoutine={routine.routine_data}
+            routineId={resolvedParams.id}
+          />
         </div>
-
-        {/* Edit Form */}
-        <AddRoutineForm
-          existingRoutine={routine.routine_data}
-          routineId={resolvedParams.id}
-        />
       </div>
     </div>
   );
