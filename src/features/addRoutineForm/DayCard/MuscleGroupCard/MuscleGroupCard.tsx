@@ -2,15 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Minus, Target } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useExercises } from "@/hooks/useExercises";
 import useRoutineStore from "@/state/newRoutine";
@@ -43,6 +37,14 @@ export const MuscleGroupCard = ({
   const availableExercises = useMemo(
     () => getExercisesForMuscleGroup(muscleGroup.name),
     [muscleGroup.name, getExercisesForMuscleGroup]
+  );
+  const exerciseOptions = useMemo(
+    () =>
+      availableExercises.map((exerciseName) => ({
+        value: exerciseName,
+        label: exerciseName,
+      })),
+    [availableExercises]
   );
   return (
     <Card key={muscleGroup.id} className="border border-border/50">
@@ -104,9 +106,27 @@ export const MuscleGroupCard = ({
                     >
                       Nombre del Ejercicio
                     </Label>
-                    <Select
+                    <Combobox
+                      id={`exercise-name-${exercise.id}`}
+                      className="mt-1"
                       value={exercise.name}
-                      onValueChange={(value) =>
+                      allowClear={false}
+                      options={
+                        exercise.name &&
+                        !exerciseOptions.some(
+                          (option) => option.value === exercise.name
+                        )
+                          ? [
+                              { value: exercise.name, label: exercise.name },
+                              ...exerciseOptions,
+                            ]
+                          : exerciseOptions
+                      }
+                      placeholder="Selecciona un ejercicio"
+                      searchPlaceholder="Buscar ejercicio..."
+                      emptyText="No se encontró el ejercicio."
+                      onValueChange={(value) => {
+                        if (!value) return;
                         updateExercise(
                           day.id,
                           muscleGroup.id,
@@ -114,20 +134,9 @@ export const MuscleGroupCard = ({
                           "name",
                           value,
                           exercise.name
-                        )
-                      }
-                    >
-                      <SelectTrigger className="mt-1 !w-full max-w-full [&>span]:truncate [&>span]:block">
-                        <SelectValue placeholder="Selecciona un ejercicio" />
-                      </SelectTrigger>
-                      <SelectContent className="max-w-[calc(100vw-2rem)]">
-                        {availableExercises.map((exerciseName) => (
-                          <SelectItem key={exerciseName} value={exerciseName}>
-                            {exerciseName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                        );
+                      }}
+                    />
                   </div>
 
                   {/* Series */}

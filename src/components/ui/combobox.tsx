@@ -33,7 +33,15 @@ interface ComboboxProps {
   emptyText?: string;
   disabled?: boolean;
   className?: string;
+  allowClear?: boolean;
+  id?: string;
 }
+
+const normalizeSearch = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 
 export function Combobox({
   value: controlledValue,
@@ -44,11 +52,13 @@ export function Combobox({
   emptyText = "No se encontraron resultados.",
   disabled = false,
   className,
+  allowClear = true,
+  id,
   ...props
 }: ComboboxProps &
   Omit<
     React.ComponentProps<typeof PopoverTrigger>,
-    "value" | "onValueChange"
+    "value" | "onValueChange" | "id"
   >) {
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState("");
@@ -63,11 +73,13 @@ export function Combobox({
   };
 
   const selectedOption = options.find((option) => option.value === value);
+  const displayLabel = selectedOption?.label || value;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           variant="outline"
           role="combobox"
           aria-expanded={open}
@@ -75,15 +87,28 @@ export function Combobox({
           className={cn("w-full justify-between", className)}
           {...props}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          <span className="truncate">
+            {displayLabel || placeholder}
+          </span>
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
         className="w-full p-0"
+        align="start"
         style={{ width: "var(--radix-popover-trigger-width)" }}
       >
-        <Command>
+        <Command
+          filter={(itemValue, search) => {
+            const option = options.find(
+              (o) => o.value.toLowerCase() === itemValue.toLowerCase()
+            );
+            const haystack = normalizeSearch(
+              `${itemValue} ${option?.label ?? ""}`
+            );
+            return haystack.includes(normalizeSearch(search)) ? 1 : 0;
+          }}
+        >
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
@@ -92,9 +117,16 @@ export function Combobox({
                 <CommandItem
                   key={option.value}
                   value={option.value}
+                  keywords={[option.label]}
                   onSelect={(currentValue) => {
-                    const newValue = currentValue === value ? "" : currentValue;
-                    handleValueChange(newValue);
+                    const matched =
+                      options.find(
+                        (o) =>
+                          o.value.toLowerCase() === currentValue.toLowerCase()
+                      ) ?? option;
+                    const nextValue =
+                      allowClear && matched.value === value ? "" : matched.value;
+                    handleValueChange(nextValue);
                     setOpen(false);
                   }}
                 >
@@ -104,7 +136,7 @@ export function Combobox({
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  <span className="truncate">{option.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
